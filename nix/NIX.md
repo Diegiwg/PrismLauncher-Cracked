@@ -13,7 +13,7 @@ the rest of your packages
 # In your flake.nix:
 {
   inputs = {
-    prismlauncher.url = "github:PrismLauncher/PrismLauncher";
+    prismlauncher.url = "github:Diegiwg/PrismLauncher-Cracked";
   };
 }
 ```
@@ -36,7 +36,7 @@ latest version
 # In your flake.nix:
 {
   inputs = {
-    prismlauncher.url = "github:PrismLauncher/PrismLauncher";
+    prismlauncher.url = "github:Diegiwg/PrismLauncher-Cracked";
   };
 }
 ```
@@ -56,7 +56,7 @@ home.packages = [ pkgs.prismlauncher ];
 #### Using channels
 
 ```sh
-nix-channel --add https://github.com/PrismLauncher/PrismLauncher/archive/master.tar.gz prismlauncher
+nix-channel --add https://github.com/Diegiwg/PrismLauncher-Cracked/archive/master.tar.gz prismlauncher
 nix-channel --update prismlauncher
 nix-env -iA prismlauncher
 ```
@@ -67,7 +67,7 @@ nix-env -iA prismlauncher
 # In your configuration.nix:
 {
   nixpkgs.overlays = [
-    (import (builtins.fetchTarball "https://github.com/PrismLauncher/PrismLauncher/archive/develop.tar.gz")).overlay
+    (import (builtins.fetchTarball "https://github.com/Diegiwg/PrismLauncher-Cracked/archive/develop.tar.gz")).overlay
   ];
 
   environment.systemPackages = with pkgs; [ prismlauncher ];
@@ -79,5 +79,5 @@ nix-env -iA prismlauncher
 If you're on a flakes-enabled nix you can run the launcher in one-line
 
 ```sh
-nix run github:PrismLauncher/PrismLauncher
+nix run github:Diegiwg/PrismLauncher-Cracked
 ```
