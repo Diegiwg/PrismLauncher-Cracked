@@ -104,8 +104,6 @@ class MinecraftAccount : public QObject, public Usable {
    public: /* queries */
     QString internalId() const { return data.internalId; }
 
-    QString accountDisplayString() const { return data.accountDisplayString(); }
-
     QString accessToken() const { return data.accessToken(); }
 
     QString profileId() const { return data.profileId(); }
@@ -135,7 +133,7 @@ class MinecraftAccount : public QObject, public Usable {
         }
     }
 
-    QPixmap getFace() const;
+    QPixmap getFace(int width = 64, int height = 64) const;
 
     //! Returns the current state of the account
     AccountState accountState() const;

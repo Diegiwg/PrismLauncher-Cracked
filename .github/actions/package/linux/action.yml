@@ -27,6 +27,18 @@ runs:
   using: composite
 
   steps:
+    - name: Cleanup Qt installation on Linux
+      shell: bash
+      run: |
+        rm -rf "$QT_PLUGIN_PATH"/printsupport
+        rm -rf "$QT_PLUGIN_PATH"/sqldrivers
+        rm -rf "$QT_PLUGIN_PATH"/help
+        rm -rf "$QT_PLUGIN_PATH"/designer
+        rm -rf "$QT_PLUGIN_PATH"/qmltooling
+        rm -rf "$QT_PLUGIN_PATH"/qmlls
+        rm -rf "$QT_PLUGIN_PATH"/qmllint
+        rm -rf "$QT_PLUGIN_PATH"/platformthemes/libqgtk3.so
+
     - name: Setup build variables
       shell: bash
       run: |
@@ -63,7 +75,7 @@ runs:
         if [ '${{ inputs.gpg-private-key-id }}' != '' ]; then
           echo "$GPG_PRIVATE_KEY" > privkey.asc
           gpg --import privkey.asc
-          gpg --export --armor 9C7A2C9B62603299 > pubkey.asc
+          gpg --export --armor ${{ inputs.gpg-private-key-id }} > pubkey.asc
         else
           echo ":warning: Skipped code signing for Linux AppImage, as gpg key was not present." >> $GITHUB_STEP_SUMMARY
         fi

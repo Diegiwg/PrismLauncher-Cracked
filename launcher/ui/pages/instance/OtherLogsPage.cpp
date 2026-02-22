@@ -50,7 +50,7 @@
 #include <QShortcut>
 #include <QUrl>
 
-OtherLogsPage::OtherLogsPage(QString id, QString displayName, QString helpPage, InstancePtr instance, QWidget* parent)
+OtherLogsPage::OtherLogsPage(QString id, QString displayName, QString helpPage, BaseInstance* instance, QWidget* parent)
     : QWidget(parent)
     , m_id(id)
     , m_displayName(displayName)
@@ -64,10 +64,10 @@ OtherLogsPage::OtherLogsPage(QString id, QString displayName, QString helpPage, 
 
     m_proxy = new LogFormatProxyModel(this);
     if (m_instance) {
-        m_model.reset(new LogModel(this));
+        m_model = new LogModel(this);
         ui->trackLogCheckbox->hide();
     } else {
-        m_model = APPLICATION->logModel;
+        m_model = APPLICATION->logModel.get();
     }
 
     // set up fonts in the log proxy
@@ -90,7 +90,7 @@ OtherLogsPage::OtherLogsPage(QString id, QString displayName, QString helpPage, 
     } else {
         modelStateToUI();
     }
-    m_proxy->setSourceModel(m_model.get());
+    m_proxy->setSourceModel(m_model);
 
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &OtherLogsPage::populateSelectLogBox);
 
@@ -182,7 +182,7 @@ void OtherLogsPage::populateSelectLogBox()
     ui->selectLogBox->blockSignals(true);
     ui->selectLogBox->clear();
     if (!m_instance)
-        ui->selectLogBox->addItem("Current logs");
+        ui->selectLogBox->addItem(tr("Current logs"));
     ui->selectLogBox->addItems(getPaths());
     ui->selectLogBox->blockSignals(false);
 
@@ -243,8 +243,8 @@ void OtherLogsPage::reload()
         if (m_instance) {
             setControlsEnabled(false);
         } else {
-            m_model = APPLICATION->logModel;
-            m_proxy->setSourceModel(m_model.get());
+            m_model = APPLICATION->logModel.get();
+            m_proxy->setSourceModel(m_model);
             ui->text->setModel(m_proxy);
             ui->text->scrollToBottom();
             UIToModelState();
@@ -280,7 +280,9 @@ void OtherLogsPage::reload()
             if (line.isEmpty())
                 return false;
             if (line.back() == '\n')
-                line = line.remove(line.size() - 1, 1);
+                line.resize(line.size() - 1);
+            if (line.back() == '\r')
+                line.resize(line.size() - 1);
             MessageLevel level = MessageLevel::Unknown;
 
             QString lineTemp = line;  // don't edit out the time and level for clarity
@@ -299,7 +301,7 @@ void OtherLogsPage::reload()
         ui->text->clear();
         ui->text->setModel(nullptr);
         if (!m_instance) {
-            m_model.reset(new LogModel(this));
+            m_model = new LogModel(this);
             m_model->setMaxLines(getConsoleMaxLines(APPLICATION->settings()));
             m_model->setStopOnOverflow(shouldStopOnConsoleOverflow(APPLICATION->settings()));
             m_model->setOverflowMessage(tr("Cannot display this log since the log length surpassed %1 lines.").arg(m_model->getMaxLines()));
@@ -338,7 +340,7 @@ void OtherLogsPage::reload()
             ui->text->setModel(m_proxy);
             ui->text->scrollToBottom();
         } else {
-            m_proxy->setSourceModel(m_model.get());
+            m_proxy->setSourceModel(m_model);
             ui->text->setModel(m_proxy);
             ui->text->scrollToBottom();
             UIToModelState();
@@ -472,14 +474,14 @@ void OtherLogsPage::setControlsEnabled(const bool enabled)
         ui->btnDelete->setEnabled(enabled);
         ui->btnClean->setEnabled(enabled);
     } else if (!m_currentFile.isEmpty()) {
-        ui->btnReload->setText("&Reload");
-        ui->btnReload->setToolTip("Reload the contents of the log from the disk");
+        ui->btnReload->setText(tr("&Reload"));
+        ui->btnReload->setToolTip(tr("Reload the contents of the log from the disk"));
         ui->btnDelete->setEnabled(enabled);
         ui->btnClean->setEnabled(enabled);
         ui->trackLogCheckbox->setEnabled(false);
     } else {
-        ui->btnReload->setText("Clear");
-        ui->btnReload->setToolTip("Clear the log");
+        ui->btnReload->setText(tr("Clear"));
+        ui->btnReload->setToolTip(tr("Clear the log"));
         ui->btnDelete->setEnabled(false);
         ui->btnClean->setEnabled(false);
         ui->trackLogCheckbox->setEnabled(enabled);

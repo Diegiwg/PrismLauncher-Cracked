@@ -23,6 +23,7 @@
 #include <QIcon>
 #include <QProcessEnvironment>
 #include "Application.h"
+#include "settings/SettingsObject.h"
 #include "Exception.h"
 #include "FileSystem.h"
 #include "Json.h"
@@ -54,7 +55,7 @@ QString getDynamicPath()
         auto doc = Json::requireDocument(FS::read(settingsPath));
         return Json::requireString(Json::requireObject(doc), "instanceLocation");
     } catch (const Exception& e) {
-        qCritical() << "Could not read ftb settings file: " << e.cause();
+        qCritical() << "Could not read ftb settings file:" << e.cause();
     }
     return {};
 }

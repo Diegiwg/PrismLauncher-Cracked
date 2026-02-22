@@ -153,6 +153,7 @@ class ResourceFolderModel : public QAbstractListModel {
 
     [[nodiscard]] bool validateIndex(const QModelIndex& index) const;
 
+    QBrush rowBackground(int row) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
@@ -261,7 +262,10 @@ class ResourceFolderModel : public QAbstractListModel {
     // Represents the relationship between a resource's internal ID and it's row position on the model.
     QMap<QString, int> m_resources_index;
 
-    ConcurrentTask m_helper_thread_task;
+    // Runs off-thread
+    ConcurrentTask m_resourceResolver;
+    bool m_resourceResolverRunning = false;
+
     QMap<int, Task::Ptr> m_active_parse_tasks;
     std::atomic<int> m_next_resolution_ticket = 0;
 };

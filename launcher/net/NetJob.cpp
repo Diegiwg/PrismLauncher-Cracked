@@ -41,11 +41,11 @@
 #include "tasks/ConcurrentTask.h"
 #if defined(LAUNCHER_APPLICATION)
 #include "Application.h"
+#include "settings/SettingsObject.h"
 #include "ui/dialogs/CustomMessageBox.h"
 #endif
 
-NetJob::NetJob(QString job_name, shared_qobject_ptr<QNetworkAccessManager> network, int max_concurrent)
-    : ConcurrentTask(job_name), m_network(network)
+NetJob::NetJob(QString job_name, QNetworkAccessManager* network, int max_concurrent) : ConcurrentTask(job_name), m_network(network)
 {
 #if defined(LAUNCHER_APPLICATION)
     if (APPLICATION_DYN && max_concurrent < 0)

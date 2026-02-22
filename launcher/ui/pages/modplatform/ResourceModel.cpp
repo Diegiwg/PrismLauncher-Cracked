@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "Application.h"
+#include "settings/SettingsObject.h"
 #include "BuildConfig.h"
 
 #include "modplatform/ResourceAPI.h"
@@ -471,7 +472,7 @@ void ResourceModel::infoRequestSucceeded(ModPlatform::IndexedPack::Ptr pack, con
 
 void ResourceModel::addPack(ModPlatform::IndexedPack::Ptr pack,
                             ModPlatform::IndexedVersion& version,
-                            const std::shared_ptr<ResourceFolderModel> packs,
+                            ResourceFolderModel* packs,
                             bool is_indexed)
 {
     version.is_currently_selected = true;

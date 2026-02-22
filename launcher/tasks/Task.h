@@ -127,6 +127,9 @@ class Task : public QObject, public QRunnable {
 
     QUuid getUid() { return m_uid; }
 
+    // Copies the other task's status, details, progress, and step progress to this task; and sets up connections for future propagation
+    void propagateFromOther(Task* other);
+
    protected:
     void logWarning(const QString& line);
 
@@ -151,6 +154,8 @@ class Task : public QObject, public QRunnable {
     //! Emitted when the canAbort() status has changed. */
     void abortStatusChanged(bool can_abort);
 
+    void abortButtonTextChanged(QString text);
+
    public slots:
     // QRunnable's interface
     void run() override { start(); }
@@ -169,6 +174,11 @@ class Task : public QObject, public QRunnable {
     {
         m_can_abort = can_abort;
         emit abortStatusChanged(can_abort);
+    }
+
+    void setAbortButtonText(QString text)
+    {
+        emit abortButtonTextChanged(text);
     }
 
    protected:

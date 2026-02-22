@@ -38,9 +38,12 @@ ResourceFolderModel::ResourceFolderModel(const QDir& dir, BaseInstance* instance
     m_dir.setSorting(QDir::Name | QDir::IgnoreCase | QDir::LocaleAware);
 
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &ResourceFolderModel::directoryChanged);
-    connect(&m_helper_thread_task, &ConcurrentTask::finished, this, [this] { m_helper_thread_task.clear(); });
+    connect(&m_resourceResolver, &ConcurrentTask::finished, this, [this] {
+        m_resourceResolver.clear();
+        m_resourceResolverRunning = false;
+    });
     if (APPLICATION_DYN) {  // in tests the application macro doesn't work
-        m_helper_thread_task.setMaxConcurrent(APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
+        m_resourceResolver.setMaxConcurrent(APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     }
 }
 
@@ -61,9 +64,9 @@ bool ResourceFolderModel::startWatching(const QStringList& paths)
     auto couldnt_be_watched = m_watcher.addPaths(paths);
     for (auto path : paths) {
         if (couldnt_be_watched.contains(path))
-            qDebug() << "Failed to start watching " << path;
+            qDebug() << "Failed to start watching" << path;
         else
-            qDebug() << "Started watching " << path;
+            qDebug() << "Started watching" << path;
     }
 
     update();
@@ -80,9 +83,9 @@ bool ResourceFolderModel::stopWatching(const QStringList& paths)
     auto couldnt_be_stopped = m_watcher.removePaths(paths);
     for (auto path : paths) {
         if (couldnt_be_stopped.contains(path))
-            qDebug() << "Failed to stop watching " << path;
+            qDebug() << "Failed to stop watching" << path;
         else
-            qDebug() << "Stopped watching " << path;
+            qDebug() << "Stopped watching" << path;
     }
 
     m_is_watching = !m_is_watching;
@@ -99,7 +102,7 @@ bool ResourceFolderModel::installResource(QString original_path)
         qWarning() << "Caught attempt to install non-existing file or file-like object:" << original_path;
         return false;
     }
-    qDebug() << "Installing: " << file_info.absoluteFilePath();
+    qDebug() << "Installing:" << file_info.absoluteFilePath();
 
     Resource resource(file_info);
     if (!resource.valid()) {
@@ -175,15 +178,15 @@ void ResourceFolderModel::installResourceWithFlameMetadata(QString path, ModPlat
         };
 
         auto response = std::make_shared<QByteArray>();
-        auto job = FlameAPI().getProject(vers.addonId.toString(), response);
+        auto job = FlameAPI().getProject(vers.addonId.toString(), response.get());
         connect(job.get(), &Task::failed, this, install);
         connect(job.get(), &Task::aborted, this, install);
         connect(job.get(), &Task::succeeded, [response, this, &vers, install, &pack] {
             QJsonParseError parse_error{};
             QJsonDocument doc = QJsonDocument::fromJson(*response, &parse_error);
             if (parse_error.error != QJsonParseError::NoError) {
-                qWarning() << "Error while parsing JSON response for mod info at " << parse_error.offset
-                           << " reason: " << parse_error.errorString();
+                qWarning() << "Error while parsing JSON response for mod info at" << parse_error.offset
+                           << "reason:" << parse_error.errorString();
                 qDebug() << *response;
                 return;
             }
@@ -192,7 +195,7 @@ void ResourceFolderModel::installResourceWithFlameMetadata(QString path, ModPlat
                 FlameMod::loadIndexedPack(pack, obj);
             } catch (const JSONValidationError& e) {
                 qDebug() << doc;
-                qWarning() << "Error while reading mod info: " << e.cause();
+                qWarning() << "Error while reading mod info:" << e.cause();
             }
             LocalResourceUpdateTask update_metadata(indexDir(), pack, vers);
             connect(&update_metadata, &Task::finished, this, install);
@@ -382,10 +385,11 @@ void ResourceFolderModel::resolveResource(Resource::Ptr res)
         },
         Qt::ConnectionType::QueuedConnection);
 
-    m_helper_thread_task.addTask(task);
+    m_resourceResolver.addTask(task);
 
-    if (!m_helper_thread_task.isRunning()) {
-        QThreadPool::globalInstance()->start(&m_helper_thread_task);
+    if (!m_resourceResolverRunning) {
+        QThreadPool::globalInstance()->start(&m_resourceResolver);
+        m_resourceResolverRunning = true;
     }
 }
 
@@ -495,6 +499,17 @@ bool ResourceFolderModel::validateIndex(const QModelIndex& index) const
     return true;
 }
 
+// HACK: all subclasses need to call this to have the whole row painted
+// and they only delegate to the superclass for compatible columns
+QBrush ResourceFolderModel::rowBackground(int row) const
+{
+    if (APPLICATION->settings()->get("ShowModIncompat").toBool() && m_resources[row]->hasIssues()) {
+        return { QColor(255, 0, 0, 40) };
+    } else {
+        return {};
+    }
+}
+
 QVariant ResourceFolderModel::data(const QModelIndex& index, int role) const
 {
     if (!validateIndex(index))
@@ -504,6 +519,8 @@ QVariant ResourceFolderModel::data(const QModelIndex& index, int role) const
     int column = index.column();
 
     switch (role) {
+        case Qt::BackgroundRole:
+            return rowBackground(row);
         case Qt::DisplayRole:
             switch (column) {
                 case NameColumn:
@@ -517,25 +534,39 @@ QVariant ResourceFolderModel::data(const QModelIndex& index, int role) const
                 default:
                     return {};
             }
-        case Qt::ToolTipRole:
+        case Qt::ToolTipRole: {
+            QString tooltip = m_resources[row]->internal_id();
+
             if (column == NameColumn) {
-                if (at(row).isSymLinkUnder(instDirPath())) {
-                    return m_resources[row]->internal_id() +
-                           tr("\nWarning: This resource is symbolically linked from elsewhere. Editing it will also change the original."
-                              "\nCanonical Path: %1")
-                               .arg(at(row).fileinfo().canonicalFilePath());
-                    ;
+                if (APPLICATION->settings()->get("ShowModIncompat").toBool()) {
+                    for (const QString& issue : at(row).issues()) {
+                        tooltip += "\n" + issue;
+                    }
                 }
+
+                if (at(row).isSymLinkUnder(instDirPath())) {
+                    tooltip +=
+                        m_resources[row]->internal_id() +
+                        tr("\nWarning: This resource is symbolically linked from elsewhere. Editing it will also change the original."
+                           "\nCanonical Path: %1")
+                            .arg(at(row).fileinfo().canonicalFilePath());
+                }
+
                 if (at(row).isMoreThanOneHardLink()) {
-                    return m_resources[row]->internal_id() +
-                           tr("\nWarning: This resource is hard linked elsewhere. Editing it will also change the original.");
+                    tooltip += tr("\nWarning: This resource is hard linked elsewhere. Editing it will also change the original.");
                 }
             }
 
-            return m_resources[row]->internal_id();
+            return tooltip;
+        }
         case Qt::DecorationRole: {
-            if (column == NameColumn && (at(row).isSymLinkUnder(instDirPath()) || at(row).isMoreThanOneHardLink()))
-                return QIcon::fromTheme("status-yellow");
+            if (column == NameColumn) {
+                if (APPLICATION->settings()->get("ShowModIncompat").toBool() && at(row).hasIssues()) {
+                    return QIcon::fromTheme("status-bad");
+                } else if (at(row).isSymLinkUnder(instDirPath()) || at(row).isMoreThanOneHardLink()) {
+                    return QIcon::fromTheme("status-yellow");
+                }
+            }
 
             return {};
         }
@@ -806,7 +837,13 @@ void ResourceFolderModel::applyUpdates(QSet<QString>& current_set, QSet<QString>
             auto const& current_resource = m_resources.at(row);
 
             if (new_resource->dateTimeChanged() == current_resource->dateTimeChanged()) {
-                // no significant change, ignore...
+                // no significant change
+                bool hadIssues = !current_resource->hasIssues();
+                current_resource->updateIssues(m_instance);
+
+                if (hadIssues != current_resource->hasIssues()) {
+                    emit dataChanged(index(row, 0), index(row, columnCount({}) - 1));
+                }
                 continue;
             }
 
@@ -821,6 +858,8 @@ void ResourceFolderModel::applyUpdates(QSet<QString>& current_set, QSet<QString>
             }
 
             m_resources[row].reset(new_resource);
+            new_resource->updateIssues(m_instance);
+
             resolveResource(m_resources.at(row));
             emit dataChanged(index(row, 0), index(row, columnCount(QModelIndex()) - 1));
         }
@@ -868,6 +907,7 @@ void ResourceFolderModel::applyUpdates(QSet<QString>& current_set, QSet<QString>
 
             for (auto& added : added_set) {
                 auto res = new_resources[added];
+                res->updateIssues(m_instance);
                 m_resources.append(res);
                 resolveResource(m_resources.last());
             }
@@ -902,6 +942,7 @@ QList<Resource*> ResourceFolderModel::allResources()
         result.append((resource.get()));
     return result;
 }
+
 QList<Resource*> ResourceFolderModel::selectedResources(const QModelIndexList& indexes)
 {
     QList<Resource*> result;

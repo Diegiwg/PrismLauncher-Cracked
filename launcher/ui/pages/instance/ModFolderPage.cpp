@@ -37,6 +37,7 @@
  */
 
 #include "ModFolderPage.h"
+#include "minecraft/mod/Resource.h"
 #include "ui/dialogs/ExportToModListDialog.h"
 #include "ui/dialogs/InstallLoaderDialog.h"
 #include "ui_ExternalResourcesPage.h"
@@ -66,7 +67,7 @@
 #include "tasks/Task.h"
 #include "ui/dialogs/ProgressDialog.h"
 
-ModFolderPage::ModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel> model, QWidget* parent)
+ModFolderPage::ModFolderPage(BaseInstance* inst, ModFolderModel* model, QWidget* parent)
     : ExternalResourcesPage(inst, model, parent), m_model(model)
 {
     ui->actionDownloadItem->setText(tr("Download Mods"));
@@ -91,7 +92,7 @@ ModFolderPage::ModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel>
     auto depsDisabled = APPLICATION->settings()->getSetting("ModDependenciesDisabled");
     ui->actionVerifyItemDependencies->setVisible(!depsDisabled->get().toBool());
     connect(depsDisabled.get(), &Setting::SettingChanged, this,
-            [this](const Setting& setting, const QVariant& value) { ui->actionVerifyItemDependencies->setVisible(!value.toBool()); });
+            [this](const Setting&, const QVariant& value) { ui->actionVerifyItemDependencies->setVisible(!value.toBool()); });
 
     updateMenu->addAction(ui->actionResetItemMetadata);
     connect(ui->actionResetItemMetadata, &QAction::triggered, this, &ModFolderPage::deleteModMetadata);
@@ -136,7 +137,25 @@ void ModFolderPage::removeItems(const QItemSelection& selection)
         if (response != QMessageBox::Yes)
             return;
     }
-    m_model->deleteResources(selection.indexes());
+
+    auto indexes = selection.indexes();
+    auto affected = m_model->getAffectedMods(indexes, EnableAction::DISABLE);
+    if (!affected.isEmpty()) {
+        auto response = CustomMessageBox::selectable(this, tr("Confirm Disable"),
+                                                     tr("The mods you are trying to delete are required by %1 mods.\n"
+                                                        "Do you want to disable them?")
+                                                         .arg(affected.length()),
+                                                     QMessageBox::Warning, QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
+                                                     QMessageBox::Cancel)
+                            ->exec();
+
+        if (response != QMessageBox::Yes) {
+            m_model->setResourceEnabled(affected, EnableAction::DISABLE);
+        } else if (response != QMessageBox::Cancel) {
+            return;
+        }
+    }
+    m_model->deleteResources(indexes);
 }
 
 void ModFolderPage::downloadMods()
@@ -341,8 +360,7 @@ void ModFolderPage::exportModMetadata()
     dlg.exec();
 }
 
-CoreModFolderPage::CoreModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel> mods, QWidget* parent)
-    : ModFolderPage(inst, mods, parent)
+CoreModFolderPage::CoreModFolderPage(BaseInstance* inst, ModFolderModel* mods, QWidget* parent) : ModFolderPage(inst, mods, parent)
 {
     auto mcInst = dynamic_cast<MinecraftInstance*>(m_instance);
     if (mcInst) {
@@ -358,7 +376,9 @@ CoreModFolderPage::CoreModFolderPage(BaseInstance* inst, std::shared_ptr<ModFold
                             m_container->refreshContainer();
                         }
                     });
-                    update->start();
+                    if (!update->isRunning()) {
+                        update->start();
+                    }
                 }
             }
         }
@@ -381,9 +401,7 @@ bool CoreModFolderPage::shouldDisplay() const
     return false;
 }
 
-NilModFolderPage::NilModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel> mods, QWidget* parent)
-    : ModFolderPage(inst, mods, parent)
-{}
+NilModFolderPage::NilModFolderPage(BaseInstance* inst, ModFolderModel* mods, QWidget* parent) : ModFolderPage(inst, mods, parent) {}
 
 bool NilModFolderPage::shouldDisplay() const
 {

@@ -55,6 +55,7 @@
 #include <QStyledItemDelegate>
 
 #include <Application.h>
+#include "settings/SettingsObject.h"
 
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui/dialogs/ProgressDialog.h"
@@ -100,7 +101,7 @@ class ThumbnailRunnable : public QRunnable {
         QImage image(m_path);
         if (image.isNull()) {
             m_resultEmitter.emitResultsFailed(m_path);
-            qDebug() << "Error loading screenshot: " + m_path + ". Perhaps too large?";
+            qDebug() << "Error loading screenshot (perhaps too large?):" + m_path;
             return;
         }
         QImage small;

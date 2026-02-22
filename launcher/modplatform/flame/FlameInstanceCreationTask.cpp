@@ -54,7 +54,7 @@
 
 #include "settings/INISettingsObject.h"
 
-#include "sys.h"
+#include "SysInfo.h"
 #include "tasks/ConcurrentTask.h"
 #include "ui/dialogs/BlockedModsDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
@@ -75,7 +75,6 @@ bool FlameCreationTask::abort()
     if (!canAbort())
         return false;
 
-    m_abort = true;
     if (m_processUpdateFileInfoJob)
         m_processUpdateFileInfoJob->abort();
     if (m_filesJob)
@@ -83,7 +82,7 @@ bool FlameCreationTask::abort()
     if (m_modIdResolver)
         m_modIdResolver->abort();
 
-    return Task::abort();
+    return InstanceCreationTask::abort();
 }
 
 bool FlameCreationTask::updateInstance()
@@ -91,7 +90,7 @@ bool FlameCreationTask::updateInstance()
     auto instance_list = APPLICATION->instances();
 
     // FIXME: How to handle situations when there's more than one install already for a given modpack?
-    InstancePtr inst;
+    BaseInstance* inst;
     if (auto original_id = originalInstanceID(); !original_id.isEmpty()) {
         inst = instance_list->getInstanceById(original_id);
         Q_ASSERT(inst);
@@ -185,7 +184,7 @@ bool FlameCreationTask::updateInstance()
         }
 
         auto raw_response = std::make_shared<QByteArray>();
-        auto job = api.getFiles(fileIds, raw_response);
+        auto job = api.getFiles(fileIds, raw_response.get());
 
         QEventLoop loop;
 
@@ -194,8 +193,8 @@ bool FlameCreationTask::updateInstance()
             QJsonParseError parse_error{};
             auto doc = QJsonDocument::fromJson(*raw_response, &parse_error);
             if (parse_error.error != QJsonParseError::NoError) {
-                qWarning() << "Error while parsing JSON response from Flame files task at " << parse_error.offset
-                           << " reason: " << parse_error.errorString();
+                qWarning() << "Error while parsing JSON response from Flame files task at" << parse_error.offset
+                           << "reason:" << parse_error.errorString();
                 qWarning() << *raw_response;
                 return;
             }
@@ -235,7 +234,7 @@ bool FlameCreationTask::updateInstance()
                 }
             }
         });
-        connect(job.get(), &Task::failed, this, [](QString reason) { qCritical() << "Failed to get files: " << reason; });
+        connect(job.get(), &Task::failed, this, [](QString reason) { qCritical() << "Failed to get files:" << reason; });
         connect(job.get(), &Task::finished, &loop, &QEventLoop::quit);
 
         m_processUpdateFileInfoJob = job;
@@ -316,7 +315,7 @@ QString FlameCreationTask::getVersionForLoader(QString uid, QString loaderType, 
     return loaderVersion;
 }
 
-bool FlameCreationTask::createInstance()
+std::unique_ptr<MinecraftInstance> FlameCreationTask::createInstance()
 {
     QEventLoop loop;
 
@@ -334,7 +333,7 @@ bool FlameCreationTask::createInstance()
 
     } catch (const JSONValidationError& e) {
         setError(tr("Could not understand pack manifest:\n") + e.cause());
-        return false;
+        return nullptr;
     }
 
     if (!m_pack.overrides.isEmpty()) {
@@ -346,7 +345,7 @@ bool FlameCreationTask::createInstance()
             QString mcPath = FS::PathCombine(m_stagingPath, "minecraft");
             if (!FS::move(overridePath, mcPath)) {
                 setError(tr("Could not rename the overrides folder:\n") + m_pack.overrides);
-                return false;
+                return nullptr;
             }
         } else {
             logWarning(
@@ -386,8 +385,8 @@ bool FlameCreationTask::createInstance()
     }
 
     QString configPath = FS::PathCombine(m_stagingPath, "instance.cfg");
-    auto instanceSettings = std::make_shared<INISettingsObject>(configPath);
-    MinecraftInstance instance(m_globalSettings, instanceSettings, m_stagingPath);
+    auto instanceSettings = std::make_unique<INISettingsObject>(configPath);
+    auto instance = std::make_unique<MinecraftInstance>(m_globalSettings, std::move(instanceSettings), m_stagingPath);
     auto mcVersion = m_pack.minecraft.version;
 
     // Hack to correct some 'special sauce'...
@@ -397,25 +396,25 @@ bool FlameCreationTask::createInstance()
         logWarning(tr("Mysterious trailing dots removed from Minecraft version while importing pack."));
     }
 
-    auto components = instance.getPackProfile();
+    auto components = instance->getPackProfile();
     components->buildingFromScratch();
     components->setComponentVersion("net.minecraft", mcVersion, true);
     if (!loaderType.isEmpty()) {
         auto version = getVersionForLoader(loaderUid, loaderType, loaderVersion, mcVersion);
         if (version.isEmpty())
-            return false;
+            return nullptr;
         components->setComponentVersion(loaderUid, version);
     }
 
     if (m_instIcon != "default") {
-        instance.setIconKey(m_instIcon);
+        instance->setIconKey(m_instIcon);
     } else {
         if (m_pack.name.contains("Direwolf20")) {
-            instance.setIconKey("steve");
+            instance->setIconKey("steve");
         } else if (m_pack.name.contains("FTB") || m_pack.name.contains("Feed The Beast")) {
-            instance.setIconKey("ftb_logo");
+            instance->setIconKey("ftb_logo");
         } else {
-            instance.setIconKey("flame");
+            instance->setIconKey("flame");
         }
     }
 
@@ -423,7 +422,7 @@ bool FlameCreationTask::createInstance()
 
     // only set memory if this is a fresh instance
     if (m_instance == nullptr && recommendedRAM > 0) {
-        const uint64_t sysMiB = Sys::getSystemRam() / Sys::mebibyte;
+        const uint64_t sysMiB = SysInfo::getSystemRamMiB();
         const uint64_t max = sysMiB * 0.9;
 
         if (static_cast<uint64_t>(recommendedRAM) > max) {
@@ -433,8 +432,8 @@ bool FlameCreationTask::createInstance()
             recommendedRAM = max;
         }
 
-        instance.settings()->set("OverrideMemory", true);
-        instance.settings()->set("MaxMemAlloc", recommendedRAM);
+        instance->settings()->set("OverrideMemory", true);
+        instance->settings()->set("MaxMemAlloc", recommendedRAM);
     }
 
     QString jarmodsPath = FS::PathCombine(m_stagingPath, "minecraft", "jarmods");
@@ -448,7 +447,7 @@ bool FlameCreationTask::createInstance()
             qDebug() << info.fileName();
             jarMods.push_back(info.absoluteFilePath());
         }
-        auto profile = instance.getPackProfile();
+        auto profile = instance->getPackProfile();
         profile->installJarMods(jarMods);
         // nuke the original files
         FS::deletePath(jarmodsPath);
@@ -456,11 +455,11 @@ bool FlameCreationTask::createInstance()
 
     // Don't add managed info to packs without an ID (most likely imported from ZIP)
     if (!m_managedId.isEmpty())
-        instance.setManagedPack("flame", m_managedId, m_pack.name, m_managedVersionId, m_pack.version);
+        instance->setManagedPack("flame", m_managedId, m_pack.name, m_managedVersionId, m_pack.version);
     else
-        instance.setManagedPack("flame", "", name(), "", "");
+        instance->setManagedPack("flame", "", name(), "", "");
 
-    instance.setName(name());
+    instance->setName(name());
 
     m_modIdResolver.reset(new Flame::FileResolvingTask(m_pack));
     connect(m_modIdResolver.get(), &Flame::FileResolvingTask::succeeded, this, [this, &loop] { idResolverSucceeded(loop); });
@@ -485,10 +484,13 @@ bool FlameCreationTask::createInstance()
         setAbortable(false);
         auto inst = m_instance.value();
 
-        inst->copyManagedPack(instance);
+        inst->copyManagedPack(*instance);
     }
 
-    return did_succeed;
+    if (did_succeed) {
+        return instance;
+    }
+    return nullptr;
 }
 
 void FlameCreationTask::idResolverSucceeded(QEventLoop& loop)
@@ -551,7 +553,7 @@ void FlameCreationTask::idResolverSucceeded(QEventLoop& loop)
         message_dialog.setModal(true);
 
         if (message_dialog.exec()) {
-            qDebug() << "Post dialog blocked mods list: " << blocked_mods;
+            qDebug() << "Post dialog blocked mods list:" << blocked_mods;
             copyBlockedMods(blocked_mods);
             setupDownloadJob(loop);
         } else {

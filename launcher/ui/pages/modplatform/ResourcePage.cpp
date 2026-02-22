@@ -63,6 +63,7 @@ ResourcePage::ResourcePage(ResourceDownloadDialog* parent, BaseInstance& base_in
     m_ui->searchEdit->installEventFilter(this);
 
     m_ui->versionSelectionBox->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_ui->versionSelectionBox->view()->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_ui->versionSelectionBox->view()->parentWidget()->setMaximumHeight(300);
 
     m_searchTimer.setTimerType(Qt::TimerType::CoarseTimer);
@@ -370,9 +371,7 @@ void ResourcePage::removeResourceFromDialog(const QString& pack_name)
     m_parentDialog->removeResource(pack_name);
 }
 
-void ResourcePage::addResourceToPage(ModPlatform::IndexedPack::Ptr pack,
-                                     ModPlatform::IndexedVersion& ver,
-                                     const std::shared_ptr<ResourceFolderModel> base_model)
+void ResourcePage::addResourceToPage(ModPlatform::IndexedPack::Ptr pack, ModPlatform::IndexedVersion& ver, ResourceFolderModel* base_model)
 {
     bool is_indexed = !APPLICATION->settings()->get("ModMetadataDisabled").toBool();
     m_model->addPack(pack, ver, base_model, is_indexed);

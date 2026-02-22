@@ -3,6 +3,7 @@
 #define PRISM_PRECOMPILED_BASE_HEADERS_H
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -12,6 +13,5 @@
 #include <FileSystem.h>
 #include <Json.h>
 #include <Version.h>
-#include <sys.h>
 
 #endif  // PRISM_PRECOMPILED_BASE_HEADERS_H

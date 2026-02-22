@@ -28,11 +28,13 @@
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QListView>
+#include <QMenu>
 #include <QMimeDatabase>
 #include <QPainter>
 #include <QUrl>
 
 #include "Application.h"
+#include "settings/SettingsObject.h"
 #include "DesktopServices.h"
 #include "Json.h"
 #include "QObjectPtr.h"
@@ -476,8 +478,8 @@ void SkinManageDialog::on_userBtn_clicked()
     auto uuidLoop = makeShared<WaitTask>();
     auto profileLoop = makeShared<WaitTask>();
 
-    auto getUUID = Net::Download::makeByteArray("https://api.minecraftservices.com/minecraft/profile/lookup/name/" + user, uuidOut);
-    auto getProfile = Net::Download::makeByteArray(QUrl(), profileOut);
+    auto getUUID = Net::Download::makeByteArray("https://api.minecraftservices.com/minecraft/profile/lookup/name/" + user, uuidOut.get());
+    auto getProfile = Net::Download::makeByteArray(QUrl(), profileOut.get());
     auto downloadSkin = Net::Download::makeFile(QUrl(), path);
 
     QString failReason;
@@ -504,8 +506,8 @@ void SkinManageDialog::on_userBtn_clicked()
             QJsonParseError parse_error{};
             QJsonDocument doc = QJsonDocument::fromJson(*uuidOut, &parse_error);
             if (parse_error.error != QJsonParseError::NoError) {
-                qWarning() << "Error while parsing JSON response from Minecraft skin service at " << parse_error.offset
-                           << " reason: " << parse_error.errorString();
+                qWarning() << "Error while parsing JSON response from Minecraft skin service at" << parse_error.offset
+                           << "reason:" << parse_error.errorString();
                 failReason = tr("failed to parse get user UUID response");
                 uuidLoop->quit();
                 return;

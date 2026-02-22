@@ -68,6 +68,7 @@ ModrinthPage::ModrinthPage(NewInstanceDialog* dialog, QWidget* parent)
     m_ui->packView->setModel(m_model);
 
     m_ui->versionSelectionBox->view()->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_ui->versionSelectionBox->view()->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_ui->versionSelectionBox->view()->parentWidget()->setMaximumHeight(300);
 
     m_search_timer.setTimerType(Qt::TimerType::CoarseTimer);
@@ -372,9 +373,9 @@ void ModrinthPage::createFilterWidget()
 
     connect(m_filterWidget.get(), &ModFilterWidget::filterChanged, this, &ModrinthPage::triggerSearch);
     auto response = std::make_shared<QByteArray>();
-    m_categoriesTask = ModrinthAPI::getModCategories(response);
+    m_categoriesTask = ModrinthAPI::getModCategories(response.get());
     connect(m_categoriesTask.get(), &Task::succeeded, [this, response]() {
-        auto categories = ModrinthAPI::loadCategories(response, "modpack");
+        auto categories = ModrinthAPI::loadCategories(response.get(), "modpack");
         m_filterWidget->setCategories(categories);
     });
     m_categoriesTask->start();

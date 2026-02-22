@@ -38,7 +38,7 @@ void LookupServerAddress::setOutputAddressPtr(MinecraftTarget::Ptr output)
 bool LookupServerAddress::abort()
 {
     m_dnsLookup->abort();
-    emitFailed("Aborted");
+    emitAborted();
     return true;
 }
 
@@ -87,6 +87,6 @@ void LookupServerAddress::resolve(const QString& address, quint16 port)
     m_output->address = address;
     m_output->port = port;
 
-    emitSucceeded();
     m_dnsLookup->deleteLater();
+    emitSucceeded();
 }

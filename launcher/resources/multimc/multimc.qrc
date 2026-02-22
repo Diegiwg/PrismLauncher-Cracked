@@ -49,13 +49,6 @@
         <file>48x48/minecraft.png</file>
         <file>256x256/minecraft.png</file>
 
-        <!-- About dialog. GPLv2, http://openiconlibrary.sourceforge.net/gallery2/?./Icons/actions/help-contents.png -->
-        <file>16x16/about.png</file>
-        <file>22x22/about.png</file>
-        <file>32x32/about.png</file>
-        <file>48x48/about.png</file>
-        <file>64x64/about.png</file>
-
         <!-- Report bug. Our own. -->
         <file>scalable/bug.svg</file>
         <file>16x16/bug.png</file>
@@ -92,14 +85,6 @@
         <file>48x48/centralmods.png</file>
         <file>64x64/centralmods.png</file>
 
-        <!-- Update. GPLv2, https://code.google.com/p/gnome-colors/ -->
-        <file>scalable/checkupdate.svg</file>
-        <file>16x16/checkupdate.png</file>
-        <file>22x22/checkupdate.png</file>
-        <file>32x32/checkupdate.png</file>
-        <file>48x48/checkupdate.png</file>
-        <file>64x64/checkupdate.png</file>
-
         <!-- copy instance. CC-BY-SA 3.0, http://openiconlibrary.sourceforge.net/gallery2/?./Icons/actions/edit-copy-6.png -->
         <file>16x16/copy.png</file>
         <file>22x22/copy.png</file>
@@ -113,13 +98,6 @@
         <file>32x32/help.png</file>
         <file>48x48/help.png</file>
         <file>64x64/help.png</file>
-
-        <!-- New instance. GPLv2, http://openiconlibrary.sourceforge.net/gallery2/?./Icons/actions/document-new-3.png -->
-        <file>16x16/new.png</file>
-        <file>22x22/new.png</file>
-        <file>32x32/new.png</file>
-        <file>48x48/new.png</file>
-        <file>64x64/new.png</file>
 
         <!-- Open news. Our own. -->
         <file>scalable/news.svg</file>
@@ -337,16 +315,18 @@
         <file>scalable/instances/fox_legacy.svg</file>
         <file>scalable/instances/bee_legacy.svg</file>
 
-        <!-- delete, tag, rename, shortcut and server LGPL3, Oxygen icons.-->
+        <!-- delete, tag, rename, shortcut, about, new, checkupdate and server LGPL3, Oxygen icons.-->
         <file>scalable/delete.svg</file>
         <file>scalable/tag.svg</file>
         <file>scalable/rename.svg</file>
         <file>scalable/shortcut.svg</file>
-
         <file>scalable/export.svg</file>
         <file>scalable/launch.svg</file>
         <file>scalable/server.svg</file>
         <file>scalable/appearance.svg</file>
+        <file>scalable/about.svg</file>
+        <file>scalable/new.svg</file>
+        <file>scalable/checkupdate.svg</file>  
 
         <file>scalable/instances/quiltmc.svg</file>  <!-- CC0 QuiltMC -->
         <file>scalable/instances/fabricmc.svg</file>  <!-- CC0 unascribed, https://github.com/FabricMC/community/blob/main/media/unascribed/README.md -->

@@ -1,5 +1,6 @@
 #include "JavaWizardPage.h"
 #include "Application.h"
+#include "settings/SettingsObject.h"
 
 #include <QFileDialog>
 #include <QGroupBox>
@@ -9,8 +10,6 @@
 #include <QSpinBox>
 #include <QToolButton>
 #include <QVBoxLayout>
-
-#include <sys.h>
 
 #include "JavaCommon.h"
 
