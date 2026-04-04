@@ -136,12 +136,15 @@ void ModpackListModel::performPaginatedSearch()
     static const ModrinthAPI api;
 
     // Modrinth ids are not limited to numbers and can be any length
-    if (m_currentSearchTerm.startsWith("#")) {
+    if (m_searchState != ResetRequested && m_currentSearchTerm.startsWith("#")) {
         auto projectId = m_currentSearchTerm.mid(1);
         if (!projectId.isEmpty()) {
             ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
 
-            callbacks.on_fail = [this](QString reason, int) { searchRequestFailed(reason); };
+            callbacks.on_fail = [this](QString reason, int) {
+                m_searchState = ResetRequested;
+                searchRequestFailed(reason);
+            };
             callbacks.on_succeed = [this](auto& pack) { searchRequestForOneSucceeded(pack); };
             callbacks.on_abort = [this] {
                 qCritical() << "Search task aborted by an unknown reason!";

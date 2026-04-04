@@ -166,14 +166,17 @@ void ListModel::performPaginatedSearch()
 {
     static const FlameAPI api;
 
-    // activate search by id only for numerical values because all CurseForge ids are numerical
+    // activate id search only for numerical values because all CurseForge ids are numerical
     static const QRegularExpression s_projectIdExpr("^\\#[0-9]+$");
-    if (s_projectIdExpr.match(m_currentSearchTerm).hasMatch()) {
+    if (m_searchState != ResetRequested && s_projectIdExpr.match(m_currentSearchTerm).hasMatch()) {
         auto projectId = m_currentSearchTerm.mid(1);
         if (!projectId.isEmpty()) {
             ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
 
-            callbacks.on_fail = [this](QString reason, int) { searchRequestFailed(reason); };
+            callbacks.on_fail = [this](QString reason, int) {
+                m_searchState = ResetRequested;
+                searchRequestFailed(reason);
+            };
             callbacks.on_succeed = [this](auto& pack) { searchRequestForOneSucceeded(pack); };
             callbacks.on_abort = [this] {
                 qCritical() << "Search task aborted by an unknown reason!";
