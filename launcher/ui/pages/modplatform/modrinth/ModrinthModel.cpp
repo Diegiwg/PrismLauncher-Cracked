@@ -148,7 +148,7 @@ void ModpackListModel::performPaginatedSearch()
             };
             auto project = std::make_shared<ModPlatform::IndexedPack>();
             project->addonId = projectId;
-            if (auto job = api.getProjectInfo({ project }, std::move(callbacks)); job) {
+            if (auto job = api.getProjectInfo({ project }, std::move(callbacks), false); job) {
                 m_jobPtr = job;
                 m_jobPtr->start();
             }
