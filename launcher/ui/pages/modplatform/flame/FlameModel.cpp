@@ -166,7 +166,7 @@ void ListModel::performPaginatedSearch()
 {
     static const FlameAPI api;
 
-    // activate id search only for numerical values because all CurseForge ids are numerical
+    // activate search by id only for numerical values because all CurseForge ids are numerical
     static const QRegularExpression s_projectIdExpr("^\\#[0-9]+$");
     if (m_searchState != ResetRequested && s_projectIdExpr.match(m_currentSearchTerm).hasMatch()) {
         auto projectId = m_currentSearchTerm.mid(1);

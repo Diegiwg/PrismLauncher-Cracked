@@ -163,7 +163,7 @@ void ResourceModel::search()
             };
             auto project = std::make_shared<ModPlatform::IndexedPack>();
             project->addonId = projectId;
-            if (auto job = m_api->getProjectInfo({ project }, std::move(callbacks)); job)
+            if (auto job = m_api->getProjectInfo({ project }, std::move(callbacks), false); job)
                 runSearchJob(job);
             return;
         }
