@@ -135,6 +135,7 @@ void ModpackListModel::performPaginatedSearch()
         return;
     static const ModrinthAPI api;
 
+    // Modrinth ids are not limited to numbers and can be any length
     if (m_currentSearchTerm.startsWith("#")) {
         auto projectId = m_currentSearchTerm.mid(1);
         if (!projectId.isEmpty()) {
