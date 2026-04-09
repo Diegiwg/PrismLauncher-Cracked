@@ -736,6 +736,12 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting({ "MaxMemAlloc", "MaxMemoryAlloc" }, SysInfo::defaultMaxJvmMem());
         m_settings->registerSetting("PermGen", 128);
 
+        // https://github.com/PrismLauncher/PrismLauncher/issues/5305
+        // arm64 Macs have configurations with very little physical memory, but the OS can compensate by compressing and swapping
+        // According to user reports, this is not noticeable under normal usage due to fast storage speeds
+        const bool lowMemWarningDefault = !(SysInfo::currentSystem() == "osx" && SysInfo::useQTForArch() == "arm64");
+        m_settings->registerSetting("LowMemWarning", lowMemWarningDefault);
+
         // Java Settings
         m_settings->registerSetting("JavaPath", "");
         m_settings->registerSetting("JavaSignature", "");
