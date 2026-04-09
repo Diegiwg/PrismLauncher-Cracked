@@ -20,7 +20,7 @@ class McClient : public QObject {
     // 1: read the response length, still reading the response
     // 2: finished reading the response
     unsigned m_responseReadState = 0;
-    unsigned m_wantedRespLength = 0;
+    int32_t m_wantedRespLength = 0;
     QByteArray m_resp;
 
    public:
