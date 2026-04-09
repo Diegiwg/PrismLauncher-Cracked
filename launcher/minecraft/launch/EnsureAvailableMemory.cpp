@@ -30,7 +30,7 @@ void EnsureAvailableMemory::executeTask()
     const uint64_t max = m_instance->settings()->get("MaxMemAlloc").toUInt();
     const uint64_t required = std::max(min, max);
 
-    if (required > available) {
+    if (static_cast<double>(required) * 0.9 > static_cast<double>(available)) {
         bool shouldAbort = false;
 
         if (m_instance->settings()->get("LowMemWarning").toBool()) {
