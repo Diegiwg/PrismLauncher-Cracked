@@ -12,7 +12,7 @@ set(Launcher_CommonName "PrismLauncher")
 set(Launcher_DisplayName "Prism Launcher")
 set(Launcher_AppID "org.prismlauncher.PrismLauncher")
 set(Launcher_Domain "prismlauncher.org")
-set(Launcher_Git "https://github.com/PrismLauncher/PrismLauncher")
+set(Launcher_Git "https://github.com/Diegiwg/PrismLauncher-Cracked")
 
 set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
 set(Launcher_DisplayName "${Launcher_DisplayName}" PARENT_SCOPE)
