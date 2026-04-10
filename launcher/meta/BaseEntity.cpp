@@ -82,12 +82,12 @@ QUrl BaseEntity::url() const
     return QUrl(metaOverride).resolved(localFilename());
 }
 
-Task::Ptr BaseEntity::loadTask(Net::Mode mode)
+Task::Ptr BaseEntity::loadTask(Net::Mode mode, bool forceReload)
 {
     if (m_task && m_task->isRunning()) {
         return m_task;
     }
-    m_task.reset(new BaseEntityLoadTask(this, mode));
+    m_task.reset(new BaseEntityLoadTask(this, mode, forceReload));
     return m_task;
 }
 
@@ -107,7 +107,9 @@ BaseEntity::LoadStatus BaseEntity::status() const
     return m_load_status;
 }
 
-BaseEntityLoadTask::BaseEntityLoadTask(BaseEntity* parent, Net::Mode mode) : m_entity(parent), m_mode(mode) {}
+BaseEntityLoadTask::BaseEntityLoadTask(BaseEntity* parent, Net::Mode mode, bool forceReload)
+    : m_entity(parent), m_mode(mode), m_force_reload(forceReload)
+{}
 
 void BaseEntityLoadTask::executeTask()
 {
@@ -149,13 +151,18 @@ void BaseEntityLoadTask::executeTask()
     auto wasLoadedOffline = m_entity->m_load_status != BaseEntity::LoadStatus::NotLoaded && m_mode == Net::Mode::Offline;
     // if has is not present allways fetch from remote(e.g. the main index file), else only fetch if hash doesn't match
     auto wasLoadedRemote = m_entity->m_sha256.isEmpty() ? m_entity->m_load_status == BaseEntity::LoadStatus::Remote : hashMatches;
-    if (wasLoadedOffline || wasLoadedRemote) {
+    if (wasLoadedOffline || (wasLoadedRemote && !m_force_reload)) {
         emitSucceeded();
         return;
     }
     m_task.reset(new NetJob(QObject::tr("Download of meta file %1").arg(m_entity->localFilename()), APPLICATION->network()));
     auto url = m_entity->url();
     auto entry = APPLICATION->metacache()->resolveEntry("meta", m_entity->localFilename());
+    if (m_force_reload) {
+        // clear validators so manual refreshes fetch a fresh body
+        entry->setETag({});
+        entry->setRemoteChangedTimestamp({});
+    }
     entry->setStale(true);
     auto dl = Net::ApiDownload::makeCached(url, entry);
     /*
