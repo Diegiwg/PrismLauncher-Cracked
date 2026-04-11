@@ -261,14 +261,16 @@ void ModrinthManagedPackPage::parseManagedPack()
     qDebug() << "Parsing Modrinth pack";
 
     // No need for the extra work because we already have everything we need.
-    if (m_loaded)
+    if (m_loaded) {
         return;
+    }
 
-    if (m_fetch_job && m_fetch_job->isRunning())
+    if (m_fetch_job && m_fetch_job->isRunning()) {
         m_fetch_job->abort();
+    }
 
     ResourceAPI::Callback<QVector<ModPlatform::IndexedVersion>> callbacks{};
-    m_pack = { m_inst->getManagedPackID() };
+    m_pack = { .addonId = m_inst->getManagedPackID() };
 
     // Use default if no callbacks are set
     callbacks.on_succeed = [this](auto& doc) {
@@ -285,8 +287,9 @@ void ModrinthManagedPackPage::parseManagedPack()
 
             // NOTE: the id from version isn't the same id in the modpack format spec...
             // e.g. HexMC's 4.4.0 has versionId 4.0.0 in the modpack index..............
-            if (version.version == m_inst->getManagedPackVersionName())
+            if (version.version == m_inst->getManagedPackVersionName()) {
                 name = tr("%1 (Current)").arg(name);
+            }
 
             ui->versionsComboBox->addItem(name, version.fileId);
         }
@@ -295,10 +298,14 @@ void ModrinthManagedPackPage::parseManagedPack()
 
         m_loaded = true;
     };
-    callbacks.on_fail = [this](QString reason, int) { setFailState(); };
+    callbacks.on_fail = [this](const QString& /*reason*/, int) { setFailState(); };
     callbacks.on_abort = [this]() { setFailState(); };
-    m_fetch_job = m_api.getProjectVersions(
-        { std::make_shared<ModPlatform::IndexedPack>(m_pack), {}, {}, ModPlatform::ResourceType::Modpack }, std::move(callbacks));
+    m_fetch_job = m_api.getProjectVersions({ .pack = std::make_shared<ModPlatform::IndexedPack>(m_pack),
+                                             .mcVersions = {},
+                                             .loaders = {},
+                                             .resourceType = ModPlatform::ResourceType::Modpack,
+                                             .includeChangelog = true },
+                                           std::move(callbacks));
 
     ui->changelogTextBrowser->setText(tr("Fetching changelogs..."));
 
@@ -407,14 +414,16 @@ void FlameManagedPackPage::parseManagedPack()
     }
 
     // No need for the extra work because we already have everything we need.
-    if (m_loaded)
+    if (m_loaded) {
         return;
+    }
 
-    if (m_fetch_job && m_fetch_job->isRunning())
+    if (m_fetch_job && m_fetch_job->isRunning()) {
         m_fetch_job->abort();
+    }
 
     QString id = m_inst->getManagedPackID();
-    m_pack = { id };
+    m_pack = { .addonId = id };
 
     ResourceAPI::Callback<QVector<ModPlatform::IndexedVersion>> callbacks{};
 
@@ -431,8 +440,9 @@ void FlameManagedPackPage::parseManagedPack()
         for (const auto& version : m_pack.versions) {
             QString name = version.getVersionDisplayString();
 
-            if (version.fileId == m_inst->getManagedPackVersionID().toInt())
+            if (version.fileId == m_inst->getManagedPackVersionID().toInt()) {
                 name = tr("%1 (Current)").arg(name);
+            }
 
             ui->versionsComboBox->addItem(name, QVariant(version.fileId));
         }
@@ -441,10 +451,14 @@ void FlameManagedPackPage::parseManagedPack()
 
         m_loaded = true;
     };
-    callbacks.on_fail = [this](QString reason, int) { setFailState(); };
+    callbacks.on_fail = [this](const QString& /*reason*/, int) { setFailState(); };
     callbacks.on_abort = [this]() { setFailState(); };
-    m_fetch_job = m_api.getProjectVersions(
-        { std::make_shared<ModPlatform::IndexedPack>(m_pack), {}, {}, ModPlatform::ResourceType::Modpack }, std::move(callbacks));
+    m_fetch_job = m_api.getProjectVersions({ .pack = std::make_shared<ModPlatform::IndexedPack>(m_pack),
+                                             .mcVersions = {},
+                                             .loaders = {},
+                                             .resourceType = ModPlatform::ResourceType::Modpack,
+                                             .includeChangelog = true },
+                                           std::move(callbacks));
 
     m_fetch_job->start();
 }
