@@ -360,12 +360,14 @@ void ScreenshotsPage::onItemActivated(QModelIndex index) const
     DesktopServices::openPath(info);
 }
 
-void ScreenshotsPage::onCurrentSelectionChanged(const QItemSelection& selected) const
+void ScreenshotsPage::onCurrentSelectionChanged(const QItemSelection& /*selected*/) const
 {
+    const auto selected = ui->listView->selectionModel()->selectedIndexes();
+
     bool allReadable = !selected.isEmpty();
     bool allWritable = !selected.isEmpty();
 
-    for (auto index : selected.indexes()) {
+    for (auto index : selected) {
         if (!index.isValid()) {
             break;
         }
@@ -379,7 +381,7 @@ void ScreenshotsPage::onCurrentSelectionChanged(const QItemSelection& selected) 
     }
 
     ui->actionUpload->setEnabled(allReadable);
-    ui->actionCopy_Image->setEnabled(allReadable);
+    ui->actionCopy_Image->setEnabled(allReadable && selected.size() == 1);
     ui->actionCopy_File_s->setEnabled(allReadable);
     ui->actionDelete->setEnabled(allWritable);
     ui->actionRename->setEnabled(allWritable);
