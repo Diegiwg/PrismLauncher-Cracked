@@ -328,7 +328,7 @@ void ScreenshotsPage::ShowContextMenu(const QPoint& pos)
 {
     auto menu = ui->toolBar->createContextMenu(this, tr("Context menu"));
 
-    if (ui->listView->selectionModel()->selectedRows().size() > 1) {
+    if (ui->listView->selectionModel()->selectedIndexes().size() > 1) {
         menu->removeAction(ui->actionCopy_Image);
     }
 
@@ -380,7 +380,7 @@ void ScreenshotsPage::on_actionView_Folder_triggered()
 
 void ScreenshotsPage::on_actionUpload_triggered()
 {
-    auto selection = ui->listView->selectionModel()->selectedRows();
+    auto selection = ui->listView->selectionModel()->selectedIndexes();
     if (selection.isEmpty())
         return;
 
@@ -487,7 +487,7 @@ void ScreenshotsPage::on_actionUpload_triggered()
 
 void ScreenshotsPage::on_actionCopy_Image_triggered()
 {
-    auto selection = ui->listView->selectionModel()->selectedRows();
+    auto selection = ui->listView->selectionModel()->selectedIndexes();
     if (selection.size() < 1) {
         return;
     }
@@ -502,7 +502,7 @@ void ScreenshotsPage::on_actionCopy_Image_triggered()
 
 void ScreenshotsPage::on_actionCopy_File_s_triggered()
 {
-    auto selection = ui->listView->selectionModel()->selectedRows();
+    auto selection = ui->listView->selectionModel()->selectedIndexes();
     if (selection.size() < 1) {
         // Don't do anything so we don't empty the users clipboard
         return;
@@ -522,7 +522,7 @@ void ScreenshotsPage::on_actionDelete_triggered()
 {
     auto selected = ui->listView->selectionModel()->selectedIndexes();
 
-    int count = ui->listView->selectionModel()->selectedRows().size();
+    int count = selected.size();
     QString text;
     if (count > 1)
         text = tr("You are about to delete %1 screenshots.\n"
