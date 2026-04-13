@@ -75,7 +75,8 @@ class ScreenshotsFSModel : public QFileSystemModel {
     bool canDropMimeData(const QMimeData* data,
                          const Qt::DropAction action,
                          const int row,
-                         const int column, const QModelIndex& parent) const override
+                         const int column,
+                         const QModelIndex& parent) const override
     {
         const QUrl root = QUrl::fromLocalFile(rootPath());
         // this disables reordering items inside the model
@@ -547,10 +548,10 @@ void ScreenshotsPage::on_actionDelete_triggered()
                   "Are you sure?")
                    .arg(count);
     } else {
-        text = tr("You are about to delete the selected screenshot.\n"
-                  "This may be permanent and it will be gone from the folder.\n\n"
-                  "Are you sure?")
-                   .arg(count);
+        text =
+            tr("You are about to delete the selected screenshot.\n"
+               "This may be permanent and it will be gone from the folder.\n\n"
+               "Are you sure?");
     }
 
     const auto response =
