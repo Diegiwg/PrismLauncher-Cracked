@@ -147,7 +147,9 @@ void ResourceModel::search()
             callbacks.on_fail = [this](QString reason, int network_error_code) {
                 if (!s_running_models.constFind(this).value())
                     return;
-                m_search_state = SearchState::ResetRequested;;
+                if (network_error_code == 404) {
+                    m_search_state = SearchState::ResetRequested;
+                }
                 searchRequestFailed(reason, network_error_code);
             };
             callbacks.on_abort = [this] {

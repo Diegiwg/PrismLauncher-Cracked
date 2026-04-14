@@ -173,8 +173,10 @@ void ListModel::performPaginatedSearch()
         if (!projectId.isEmpty()) {
             ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
 
-            callbacks.on_fail = [this](QString reason, int) {
-                m_searchState = ResetRequested;
+            callbacks.on_fail = [this](QString reason, int network_error_code) {
+                if (network_error_code == 404) {
+                    m_searchState = ResetRequested;
+                }
                 searchRequestFailed(reason);
             };
             callbacks.on_succeed = [this](auto& pack) { searchRequestForOneSucceeded(pack); };

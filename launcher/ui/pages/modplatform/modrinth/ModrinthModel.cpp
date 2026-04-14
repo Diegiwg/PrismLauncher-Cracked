@@ -142,7 +142,9 @@ void ModpackListModel::performPaginatedSearch()
             ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
 
             callbacks.on_fail = [this](QString reason, int network_error_code) {
-                m_searchState = ResetRequested;
+                if (network_error_code == 404) {
+                    m_searchState = ResetRequested;
+                }
                 searchRequestFailed(reason, network_error_code);
             };
             callbacks.on_succeed = [this](auto& pack) { searchRequestForOneSucceeded(pack); };
