@@ -32,17 +32,22 @@ void EnsureAvailableMemory::executeTask()
         return;
     }
 
-    if (static_cast<double>(required) * 0.9 > static_cast<double>(available)) {
+    const uint64_t settingMin = m_instance->settings()->get("MinMemAlloc").toUInt();
+    const uint64_t settingMax = m_instance->settings()->get("MaxMemAlloc").toUInt();
+    const uint64_t max = std::max(settingMin, settingMax);
+
+    if (static_cast<double>(max) * 0.9 > static_cast<double>(available)) {
         bool shouldAbort = false;
 
         if (m_instance->settings()->get("LowMemWarning").toBool()) {
             auto* dialog = CustomMessageBox::selectable(
-                nullptr, tr("Not enough RAM"),
-                tr("There is not enough RAM available to launch this instance with the current memory settings.\n\n"
-                   "Required: %1 MiB\nAvailable: %2 MiB\n\n"
-                   "Continue anyway? This may cause slowdowns in the game and your system.")
-                    .arg(required)
-                    .arg(available),
+                nullptr, tr("Low free memory"),
+                tr("There might not be enough free RAM to launch this instance with the current memory settings.\n\n"
+                   "Maximum allocated: %1 MiB\nFree: %2 MiB (out of %3 MiB total)\n\n"
+                   "Launch anyway? This may cause slowdowns in the game and your system.")
+                    .arg(max)
+                    .arg(available)
+                    .arg(HardwareInfo::totalRamMiB()),
                 QMessageBox::Icon::Warning, QMessageBox::StandardButton::Yes | QMessageBox::StandardButton::No,
                 QMessageBox::StandardButton::No);
 
