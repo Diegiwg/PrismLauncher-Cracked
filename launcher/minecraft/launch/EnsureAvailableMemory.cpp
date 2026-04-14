@@ -26,9 +26,11 @@ EnsureAvailableMemory::EnsureAvailableMemory(LaunchTask* parent, MinecraftInstan
 void EnsureAvailableMemory::executeTask()
 {
     const uint64_t available = HardwareInfo::availableRamMiB();
-    const uint64_t min = m_instance->settings()->get("MinMemAlloc").toUInt();
-    const uint64_t max = m_instance->settings()->get("MaxMemAlloc").toUInt();
-    const uint64_t required = std::max(min, max);
+    if (available == 0) {
+        // could not read
+        emitSucceeded();
+        return;
+    }
 
     if (static_cast<double>(required) * 0.9 > static_cast<double>(available)) {
         bool shouldAbort = false;
