@@ -33,14 +33,16 @@ void EnsureAvailableMemory::executeTask()
             return;
         case MacOSHardwareInfo::MemoryPressureLevel::Warning:
             text =
-                tr("The system is under increased memory pressure. This may cause lag or slowdowns.\n"
+                tr("The system is under increased memory pressure.\n"
+                   "This may lead to lag or slowdowns.\n"
                    "If possible, close other applications before continuing.\n\n"
                    "Launch anyway?");
             break;
         case MacOSHardwareInfo::MemoryPressureLevel::Critical:
             text =
-                tr("Your system is under critical memory pressure. This may lead to severe slowdowns or crashes.\n"
-                   "It is highly recommended to close other applications or restart your system.\n\n"
+                tr("Your system is under critical memory pressure.\n"
+                   "This may lead to severe slowdowns, crashes or system instability.\n"
+                   "It is recommended to close other applications or restart your system.\n\n"
                    "Launch anyway?");
             break;
     }
