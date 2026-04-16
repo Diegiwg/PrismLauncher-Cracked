@@ -130,7 +130,13 @@ void LaunchController::decideAccount()
     }
 }
 
-bool LaunchController::askPlayDemo()
+LaunchDecision LaunchController::decideLaunchMode()
+{
+    m_actualLaunchMode = LaunchMode::Normal;
+    return LaunchDecision::Continue;
+}
+
+bool LaunchController::askPlayDemo() const
 {
     QMessageBox box(m_parentWidget);
     box.setWindowTitle(tr("Play demo?"));
