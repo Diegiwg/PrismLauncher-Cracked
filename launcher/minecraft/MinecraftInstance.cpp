@@ -475,6 +475,12 @@ QStringList MinecraftInstance::javaArguments()
 {
     QStringList args;
 
+    args << "-Duser.language=en";
+    args << "-Dminecraft.api.auth.host=https://nope.invalid";
+    args << "-Dminecraft.api.account.host=https://nope.invalid";
+    args << "-Dminecraft.api.session.host=https://nope.invalid";
+    args << "-Dminecraft.api.services.host=https://nope.invalid";
+
     // custom args go first. we want to override them if we have our own here.
     args.append(extraArguments());
 
