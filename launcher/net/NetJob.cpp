@@ -100,12 +100,17 @@ auto NetJob::canAbort() const -> bool
 
 auto NetJob::abort() -> bool
 {
-    bool fullyAborted = true;
-
     // fail all downloads on the queue
     for (auto task : m_queue)
         m_failed.insert(task.get(), task);
     m_queue.clear();
+
+    if (m_doing.isEmpty()) {
+        // no downloads to abort, NetJob is not running
+        return true;
+    }
+
+    bool fullyAborted = true;
 
     // abort active downloads
     auto toKill = m_doing.values();
