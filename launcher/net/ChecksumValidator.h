@@ -71,8 +71,7 @@ class ChecksumValidator : public Validator {
     auto validate(QNetworkReply& reply) -> bool override
     {
         if (!m_expected.isEmpty() && m_expected != hash()) {
-            qWarning() << "Checksum mismatch for URL:" << reply.url().toString() << "expected:" << m_expected << "got:" << hash()
-                       << "algorithm:" << m_checksum.algorithm();
+            qWarning() << "Checksum mismatch for URL:" << reply.url().toString() << "expected:" << m_expected << "got:" << hash();
             return false;
         }
         return true;
