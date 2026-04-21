@@ -39,6 +39,7 @@
 #include "launch/steps/PrintServers.h"
 #include "minecraft/auth/AccountData.h"
 #include "minecraft/auth/AccountList.h"
+#include "minecraft/auth/MinecraftAccount.h"
 
 #include "ui/InstanceWindow.h"
 #include "ui/MainWindow.h"
@@ -84,29 +85,10 @@ void LaunchController::decideAccount()
         return;
     }
 
-    // Find an account to use.
-    auto accounts = APPLICATION->accounts();
-    if (accounts->count() <= 0 || !accounts->anyAccountIsValid()) {
-        // Tell the user they need to log in at least one account in order to play.
-        auto reply = CustomMessageBox::selectable(m_parentWidget, tr("No Accounts"),
-                                                  tr("In order to play Minecraft, you must have at least one Microsoft "
-                                                     "account which owns Minecraft logged in. "
-                                                     "Would you like to open the account manager to add an account now?"),
-                                                  QMessageBox::Information, QMessageBox::Yes | QMessageBox::No)
-                         ->exec();
-
-        if (reply == QMessageBox::Yes) {
-            // Open the account manager.
-            APPLICATION->ShowGlobalSettings(m_parentWidget, "accounts");
-        } else if (reply == QMessageBox::No) {
-            // Do not open "profile select" dialog.
-            return;
-        }
-    }
-
     // Select the account to use. If the instance has a specific account set, that will be used. Otherwise, the default account will be used
-    auto instanceAccountId = m_instance->settings()->get("InstanceAccountId").toString();
-    auto instanceAccountIndex = accounts->findAccountByProfileId(instanceAccountId);
+    auto* accounts = APPLICATION->accounts();
+    const auto instanceAccountId = m_instance->settings()->get("InstanceAccountId").toString();
+    const auto instanceAccountIndex = accounts->findAccountByProfileId(instanceAccountId);
     if (instanceAccountIndex == -1 || instanceAccountId.isEmpty()) {
         m_accountToUse = accounts->defaultAccount();
     } else {
@@ -114,18 +96,34 @@ void LaunchController::decideAccount()
     }
 
     if (!m_accountToUse) {
-        // If no default account is set, ask the user which one to use.
-        ProfileSelectDialog selectDialog(tr("Which account would you like to use?"), ProfileSelectDialog::GlobalDefaultCheckbox,
-                                         m_parentWidget);
+        // Check if there are any accounts at all
+        if (accounts->count() == 0) {
+            // No accounts exist, offer to create an offline account directly
+            ChooseOfflineNameDialog dialog(tr("No account found. Please enter a username to create an offline account."), m_parentWidget);
+            dialog.setWindowTitle(tr("Create Offline Account"));
+            if (dialog.exec() == QDialog::Accepted) {
+                const MinecraftAccountPtr account = MinecraftAccount::createOffline(dialog.getUsername());
+                if (account) {
+                    account->login()->start();  // The task will complete here.
+                    accounts->addAccount(account);
+                    m_accountToUse = account;
+                    accounts->setDefaultAccount(account);
+                }
+            }
+        } else {
+            // Accounts exist, show profile selection dialog
+            ProfileSelectDialog selectDialog(tr("Which account would you like to use?"), ProfileSelectDialog::GlobalDefaultCheckbox,
+                                             m_parentWidget);
 
-        selectDialog.exec();
+            selectDialog.exec();
 
-        // Launch the instance with the selected account.
-        m_accountToUse = selectDialog.selectedAccount();
+            // Launch the instance with the selected account.
+            m_accountToUse = selectDialog.selectedAccount();
 
-        // If the user said to use the account as default, do that.
-        if (selectDialog.useAsGlobalDefault() && m_accountToUse) {
-            accounts->setDefaultAccount(m_accountToUse);
+            // If the user said to use the account as default, do that.
+            if (selectDialog.useAsGlobalDefault() && m_accountToUse) {
+                accounts->setDefaultAccount(m_accountToUse);
+            }
         }
     }
 }
@@ -176,13 +174,23 @@ void LaunchController::login()
 {
     decideAccount();
 
+    // Check if an account was selected after decideAccount()
     if (!m_accountToUse) {
-        // if no account is selected, ask about demo
-        if (!m_demo) {
-            m_demo = askPlayDemo();
-        }
-        if (m_demo) {
-            // we ask the user for a player name
+        emitAborted();
+        return;
+    }
+
+    LaunchDecision decision = decideLaunchMode();
+    while (decision == LaunchDecision::Undecided) {
+        decision = decideLaunchMode();
+    }
+    if (decision == LaunchDecision::Abort) {
+        emitAborted();
+        return;
+    }
+
+    if (m_actualLaunchMode == LaunchMode::Demo) {
+        if (m_wantedLaunchMode == LaunchMode::Demo || askPlayDemo()) {
             bool ok = false;
             auto name = askOfflineName("Player", m_demo, ok);
             if (ok) {
