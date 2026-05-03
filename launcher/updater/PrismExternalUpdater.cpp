@@ -308,18 +308,20 @@ void PrismExternalUpdater::autoCheckTimerFired() const
 void PrismExternalUpdater::offerUpdate(const QString& versionName,
                                        const QString& versionTag,
                                        const QString& releaseNotes,
-                                       const bool ignoreSkipped) const
+                                       const bool triggeredByUser) const
 {
     priv->settings->beginGroup("skip");
-    auto shouldSkip = !ignoreSkipped && priv->settings->value(versionTag, false).toBool();
+    auto shouldSkip = !triggeredByUser && priv->settings->value(versionTag, false).toBool();
     priv->settings->endGroup();
 
     if (shouldSkip) {
-        auto msgBox = QMessageBox(QMessageBox::Information, tr("No Update Available"), tr("There are no new updates available."),
-                                  QMessageBox::Ok, priv->parent);
-        msgBox.setMinimumWidth(460);
-        msgBox.adjustSize();
-        msgBox.exec();
+        if (triggeredByUser) {
+            auto msgBox = QMessageBox(QMessageBox::Information, tr("No Update Available"), tr("There are no new updates available."),
+                                      QMessageBox::Ok, priv->parent);
+            msgBox.setMinimumWidth(460);
+            msgBox.adjustSize();
+            msgBox.exec();
+        }
         return;
     }
 
