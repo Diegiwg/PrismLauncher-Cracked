@@ -207,7 +207,7 @@ void PrismExternalUpdater::checkForUpdates(bool triggeredByUser)
                 qDebug() << "Update available:" << version_name << version_tag << release_timestamp;
                 qDebug() << "Update release notes:" << release_notes;
 
-                offerUpdate(version_name, version_tag, release_notes);
+                offerUpdate(version_name, version_tag, release_notes, triggeredByUser);
             }
             break;
         default:
@@ -309,10 +309,10 @@ void PrismExternalUpdater::autoCheckTimerFired()
     checkForUpdates(false);
 }
 
-void PrismExternalUpdater::offerUpdate(const QString& version_name, const QString& version_tag, const QString& release_notes)
+void PrismExternalUpdater::offerUpdate(const QString& version_name, const QString& version_tag, const QString& release_notes, const bool ignoreSkipped)
 {
     priv->settings->beginGroup("skip");
-    auto should_skip = priv->settings->value(version_tag, false).toBool();
+    auto should_skip = !ignoreSkipped && priv->settings->value(version_tag, false).toBool();
     priv->settings->endGroup();
 
     if (should_skip) {
