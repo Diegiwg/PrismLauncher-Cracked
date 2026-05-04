@@ -128,11 +128,6 @@ void LaunchController::decideAccount()
     }
 }
 
-LaunchDecision LaunchController::decideLaunchMode()
-{
-    m_actualLaunchMode = LaunchMode::Normal;
-    return LaunchDecision::Continue;
-}
 bool LaunchController::askPlayDemo()
 {
     QMessageBox box(m_parentWidget);
@@ -179,15 +174,13 @@ void LaunchController::login()
         return;
     }
 
-    LaunchDecision decision = decideLaunchMode();
-    while (decision == LaunchDecision::Undecided) {
-        decision = decideLaunchMode();
-    }
+    m_session = std::make_shared<AuthSession>();
+    m_session->wants_online = true;
+    m_session->demo = false;
+    m_accountToUse->fillSession(m_session);
 
-    if (decision == LaunchDecision::Abort) {
-        emitAborted();
-        return;
-    }
+    launchInstance();
+    return;
 
     // we loop until the user succeeds in logging in or gives up
     bool tryagain = true;
