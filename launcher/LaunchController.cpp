@@ -84,11 +84,11 @@ void LaunchController::decideAccount()
     if (m_accountToUse) {
         return;
     }
+    auto accounts = APPLICATION->accounts();
 
     // Select the account to use. If the instance has a specific account set, that will be used. Otherwise, the default account will be used
-    auto* accounts = APPLICATION->accounts();
-    const auto instanceAccountId = m_instance->settings()->get("InstanceAccountId").toString();
-    const auto instanceAccountIndex = accounts->findAccountByProfileId(instanceAccountId);
+    auto instanceAccountId = m_instance->settings()->get("InstanceAccountId").toString();
+    auto instanceAccountIndex = accounts->findAccountByProfileId(instanceAccountId);
     if (instanceAccountIndex == -1 || instanceAccountId.isEmpty()) {
         m_accountToUse = accounts->defaultAccount();
     } else {
@@ -133,8 +133,7 @@ LaunchDecision LaunchController::decideLaunchMode()
     m_actualLaunchMode = LaunchMode::Normal;
     return LaunchDecision::Continue;
 }
-
-bool LaunchController::askPlayDemo() const
+bool LaunchController::askPlayDemo()
 {
     QMessageBox box(m_parentWidget);
     box.setWindowTitle(tr("Play demo?"));
@@ -184,24 +183,9 @@ void LaunchController::login()
     while (decision == LaunchDecision::Undecided) {
         decision = decideLaunchMode();
     }
+
     if (decision == LaunchDecision::Abort) {
         emitAborted();
-        return;
-    }
-
-    if (m_actualLaunchMode == LaunchMode::Demo) {
-        if (m_wantedLaunchMode == LaunchMode::Demo || askPlayDemo()) {
-            bool ok = false;
-            auto name = askOfflineName("Player", m_demo, ok);
-            if (ok) {
-                m_session = std::make_shared<AuthSession>();
-                m_session->MakeDemo(name, MinecraftAccount::uuidFromUsername(name).toString().remove(QRegularExpression("[{}-]")));
-                launchInstance();
-                return;
-            }
-        }
-        // if no account is selected, we bail
-        emitFailed(tr("No account selected for launch."));
         return;
     }
 
