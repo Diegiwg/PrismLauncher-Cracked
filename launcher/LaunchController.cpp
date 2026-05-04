@@ -47,6 +47,7 @@
 #include "ui/dialogs/ProfileSelectDialog.h"
 #include "ui/dialogs/ProfileSetupDialog.h"
 #include "ui/dialogs/ProgressDialog.h"
+#include "ui/dialogs/OfflineLoginDialog.h"
 
 #include <QHostAddress>
 #include <QHostInfo>
@@ -99,16 +100,12 @@ void LaunchController::decideAccount()
         // Check if there are any accounts at all
         if (accounts->count() == 0) {
             // No accounts exist, offer to create an offline account directly
-            ChooseOfflineNameDialog dialog(tr("No account found. Please enter a username to create an offline account."), m_parentWidget);
-            dialog.setWindowTitle(tr("Create Offline Account"));
-            if (dialog.exec() == QDialog::Accepted) {
-                const MinecraftAccountPtr account = MinecraftAccount::createOffline(dialog.getUsername());
-                if (account) {
-                    account->login()->start();  // The task will complete here.
-                    accounts->addAccount(account);
-                    m_accountToUse = account;
-                    accounts->setDefaultAccount(account);
-                }
+            MinecraftAccountPtr account = OfflineLoginDialog::newAccount(m_parentWidget, tr("Please enter your desired username to add your offline account."));
+            if (account) {
+                account->login()->start();  // The task will complete here.
+                accounts->addAccount(account);
+                m_accountToUse = account;
+                accounts->setDefaultAccount(account);
             }
         } else {
             // Accounts exist, show profile selection dialog
