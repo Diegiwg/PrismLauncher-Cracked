@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             qt_ver: 5
             qt_host: linux
             qt_arch: ""
@@ -88,7 +88,6 @@ jobs:
             nscurl_sha256: "AEE6C4BE3CB6455858E9C1EE4B3AFE0DB9960FA03FE99CCDEDC28390D57CCBB0"
 
           - os: windows-2022
-            name: "Windows-MSVC-arm64"
             msystem: ""
             architecture: "arm64"
             vcvars_arch: "amd64_arm64"
@@ -101,6 +100,7 @@ jobs:
             nscurl_sha256: "AEE6C4BE3CB6455858E9C1EE4B3AFE0DB9960FA03FE99CCDEDC28390D57CCBB0"
 
           - os: macos-14
+            local: false
             name: macOS
             macosx_deployment_target: 11.0
             qt_ver: 6
