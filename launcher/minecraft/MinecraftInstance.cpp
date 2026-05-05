@@ -131,7 +131,8 @@
     for (const auto& gpu : gpus) {
         QString name = qvariant_cast<QString>(gpu[QStringLiteral("Name")]);
         bool defaultGpu = qvariant_cast<bool>(gpu[QStringLiteral("Default")]);
-        if (!defaultGpu) {
+        bool discrete = qvariant_cast<bool>(gpu.value(QStringLiteral("Discrete"), !defaultGpu));
+        if (discrete) {
             QStringList envList = qvariant_cast<QStringList>(gpu[QStringLiteral("Environment")]);
             for (int i = 0; i + 1 < envList.size(); i += 2) {
                 env.insert(envList[i], envList[i + 1]);
