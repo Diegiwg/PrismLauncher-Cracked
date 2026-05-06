@@ -264,7 +264,7 @@ void TexturePackPage::changeTexturePackVersion()
         return;
     }
 
-    m_downloadDialog = new ResourceDownload::TexturePackDownloadDialog(this, m_model, m_instance);
+    m_downloadDialog = new ResourceDownload::TexturePackDownloadDialog(this, m_model, m_instance, true);
     connect(this, &QObject::destroyed, m_downloadDialog, &QDialog::close);
     connect(m_downloadDialog, &QDialog::finished, this, &TexturePackPage::downloadDialogFinished);
 

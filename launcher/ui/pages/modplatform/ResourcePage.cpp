@@ -115,8 +115,17 @@ void ResourcePage::openedImpl()
     m_ui->resourceSelectionButton->setText(tr("Select %1 for download").arg(resourceString()));
 
     updateSelectionButton();
-    triggerSearch();
+    if (!m_suppressInitialSearch) {
+        triggerSearch();
+    } else {
+        m_suppressInitialSearch = false;
+    }
     m_ui->searchEdit->setFocus();
+}
+
+void ResourcePage::setSuppressInitialSearch(bool suppress)
+{
+    m_suppressInitialSearch = suppress;
 }
 
 auto ResourcePage::eventFilter(QObject* watched, QEvent* event) -> bool

@@ -242,7 +242,7 @@ void DataPackPage::changeDataPackVersion()
         return;
     }
 
-    ResourceDownload::DataPackDownloadDialog mdownload(this, m_model, m_instance);
+    ResourceDownload::DataPackDownloadDialog mdownload(this, m_model, m_instance, true);
     mdownload.setResourceMetadata(resource.metadata());
     if (mdownload.exec() != 0) {
         auto* tasks = new ConcurrentTask("Download Data Packs", APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());

@@ -259,7 +259,7 @@ void ResourcePackPage::changeResourcePackVersion()
         return;
     }
 
-    m_downloadDialog = new ResourceDownload::ResourcePackDownloadDialog(this, m_model, m_instance);
+    m_downloadDialog = new ResourceDownload::ResourcePackDownloadDialog(this, m_model, m_instance, true);
     connect(this, &QObject::destroyed, m_downloadDialog, &QDialog::close);
     connect(m_downloadDialog, &QDialog::finished, this, &ResourcePackPage::downloadDialogFinished);
 

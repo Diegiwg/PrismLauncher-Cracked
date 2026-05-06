@@ -85,7 +85,9 @@ class ResourcePage : public QWidget, public BasePage {
     QList<DownloadTaskPtr> selectedPacks() { return m_model->selectedPacks(); }
     bool hasSelectedPacks() { return !(m_model->selectedPacks().isEmpty()); }
 
-    virtual void openProject(QVariant projectID);
+    virtual void openProject(const QVariant& projectID);
+
+    void setSuppressInitialSearch(bool suppress);
 
    protected slots:
     virtual void triggerSearch() = 0;
@@ -118,6 +120,9 @@ class ResourcePage : public QWidget, public BasePage {
     bool m_doNotJumpToMod = false;
 
     QSet<int> m_enableQueue;
+
+   private:
+    bool m_suppressInitialSearch = false;
 };
 
 }  // namespace ResourceDownload
