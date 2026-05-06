@@ -51,7 +51,7 @@ class ResourceDownloadDialog : public QDialog, public BasePageProvider {
    public:
     using DownloadTaskPtr = shared_qobject_ptr<ResourceDownloadTask>;
 
-    ResourceDownloadDialog(QWidget* parent, ResourceFolderModel* base_model);
+    ResourceDownloadDialog(QWidget* parent, ResourceFolderModel* baseModel);
 
     void initializeContainer();
     void connectButtons();
@@ -67,7 +67,7 @@ class ResourceDownloadDialog : public QDialog, public BasePageProvider {
     void addResource(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&);
     void removeResource(const QString&);
 
-    const QList<DownloadTaskPtr> getTasks();
+    QList<DownloadTaskPtr> getTasks();
     ResourceFolderModel* getBaseModel() const { return m_base_model; }
 
     void setResourceMetadata(const std::shared_ptr<Metadata::ModStruct>& meta);
@@ -118,7 +118,7 @@ class ResourcePackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit ResourcePackDownloadDialog(QWidget* parent, ResourcePackFolderModel* resource_packs, BaseInstance* instance);
+    explicit ResourcePackDownloadDialog(QWidget* parent, ResourcePackFolderModel* resourcePacks, BaseInstance* instance);
     ~ResourcePackDownloadDialog() override = default;
 
     //: String that gets appended to the resource pack download dialog title ("Download " + resourcesString())
@@ -135,7 +135,7 @@ class TexturePackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit TexturePackDownloadDialog(QWidget* parent, TexturePackFolderModel* resource_packs, BaseInstance* instance);
+    explicit TexturePackDownloadDialog(QWidget* parent, TexturePackFolderModel* resourcePacks, BaseInstance* instance);
     ~TexturePackDownloadDialog() override = default;
 
     //: String that gets appended to the texture pack download dialog title ("Download " + resourcesString())
@@ -152,7 +152,7 @@ class ShaderPackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit ShaderPackDownloadDialog(QWidget* parent, ShaderPackFolderModel* shader_packs, BaseInstance* instance);
+    explicit ShaderPackDownloadDialog(QWidget* parent, ShaderPackFolderModel* shaders, BaseInstance* instance);
     ~ShaderPackDownloadDialog() override = default;
 
     //: String that gets appended to the shader pack download dialog title ("Download " + resourcesString())
@@ -169,7 +169,7 @@ class DataPackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit DataPackDownloadDialog(QWidget* parent, DataPackFolderModel* data_packs, BaseInstance* instance);
+    explicit DataPackDownloadDialog(QWidget* parent, DataPackFolderModel* dataPacks, BaseInstance* instance);
     ~DataPackDownloadDialog() override = default;
 
     //: String that gets appended to the data pack download dialog title ("Download " + resourcesString())
