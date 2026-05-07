@@ -234,7 +234,7 @@ void ResourceUpdateDialog::checkCandidates()
                 auto changelog = dep->version.changelog;
                 if (dep->pack->provider == ModPlatform::ResourceProvider::FLAME)
                     changelog = api.getModFileChangelog(dep->version.addonId.toInt(), dep->version.fileId.toInt());
-                auto download_task = makeShared<ResourceDownloadTask>(dep->pack, dep->version, m_resourceModel);
+                auto download_task = makeShared<ResourceDownloadTask>(dep->pack, dep->version, m_resourceModel, true, "dependency");
                 auto extraInfo = dependencyExtraInfo.value(dep->version.addonId.toString());
                 CheckUpdateTask::Update updatable = {
                     dep->pack->name, dep->version.hash,   tr("Not installed"), dep->version.version,      dep->version.version_type,

@@ -486,10 +486,11 @@ void ResourceModel::infoRequestSucceeded(ModPlatform::IndexedPack::Ptr pack, con
 void ResourceModel::addPack(ModPlatform::IndexedPack::Ptr pack,
                             ModPlatform::IndexedVersion& version,
                             ResourceFolderModel* packs,
-                            bool is_indexed)
+                            bool is_indexed,
+                            QString downloadReason)
 {
     version.is_currently_selected = true;
-    m_selected.append(makeShared<ResourceDownloadTask>(pack, version, packs, is_indexed));
+    m_selected.append(makeShared<ResourceDownloadTask>(pack, version, packs, is_indexed, downloadReason));
 }
 
 void ResourceModel::removePack(const QString& rem)

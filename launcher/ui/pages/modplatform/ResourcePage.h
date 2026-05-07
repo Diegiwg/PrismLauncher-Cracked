@@ -78,7 +78,7 @@ class ResourcePage : public QWidget, public BasePage {
     void addResourceToDialog(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&);
     void removeResourceFromDialog(const QString& packName);
     virtual void removeResourceFromPage(const QString& name);
-    virtual void addResourceToPage(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&, ResourceFolderModel*);
+    virtual void addResourceToPage(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&, ResourceFolderModel*, QString downloadReason = "standalone");
 
     virtual void modelReset();
 

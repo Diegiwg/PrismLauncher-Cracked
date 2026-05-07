@@ -16,7 +16,10 @@
 #include "net/ChecksumValidator.h"
 
 #include "net/ApiDownload.h"
+#include "net/ApiHeaderProxy.h"
 #include "net/NetJob.h"
+
+#include "modplatform/ModIndex.h"
 #include "settings/INISettingsObject.h"
 
 #include "ui/dialogs/CustomMessageBox.h"
@@ -256,15 +259,38 @@ std::unique_ptr<MinecraftInstance> ModrinthCreationTask::createInstance()
             return nullptr;
         }
         qDebug() << "Will try to download" << file.downloads.front() << "to" << file_path;
-        auto dl = Net::ApiDownload::makeFile(file.downloads.dequeue(), file_path);
+
+        QString loader;
+        if (m_instance.has_value()) {
+            auto* mcInstance = dynamic_cast<MinecraftInstance*>(m_instance.value());
+            if (mcInstance) {
+                auto* profile = mcInstance->getPackProfile();
+                if (profile) {
+                    auto loaders = profile->getModLoadersList();
+                    if (!loaders.isEmpty()) {
+                        loader = ModPlatform::getModLoaderAsString(loaders.first());
+                    }
+                }
+            }
+        }
+
+        Net::ModrinthDownloadMeta meta{
+            .reason = "modpack",
+            .gameVersion = m_minecraft_version,
+            .loader = loader,
+        };
+
+        QUrl downloadUrl = file.downloads.dequeue();
+        auto dl = Net::ApiDownload::makeFile(downloadUrl, file_path, Net::Download::Option::NoOptions, meta);
         dl->addValidator(new Net::ChecksumValidator(file.hashAlgorithm, file.hash));
         downloadMods->addNetAction(dl);
         if (!file.downloads.empty()) {
             // FIXME: This really needs to be put into a ConcurrentTask of
             // MultipleOptionsTask's , once those exist :)
             auto param = dl.toWeakRef();
-            connect(dl.get(), &Task::failed, [&file, file_path, param, downloadMods] {
-                auto ndl = Net::ApiDownload::makeFile(file.downloads.dequeue(), file_path);
+            connect(dl.get(), &Task::failed, [&file, file_path, param, downloadMods, meta] {
+                QUrl fallbackUrl = file.downloads.dequeue();
+                auto ndl = Net::ApiDownload::makeFile(fallbackUrl, file_path, Net::Download::Option::NoOptions, meta);
                 ndl->addValidator(new Net::ChecksumValidator(file.hashAlgorithm, file.hash));
                 downloadMods->addNetAction(ndl);
                 if (auto shared = param.lock())

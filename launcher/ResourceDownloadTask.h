@@ -20,6 +20,7 @@
 #pragma once
 
 #include "net/NetJob.h"
+#include "net/ApiHeaderProxy.h"
 #include "tasks/SequentialTask.h"
 
 #include "minecraft/mod/tasks/LocalResourceUpdateTask.h"
@@ -33,7 +34,8 @@ class ResourceDownloadTask : public SequentialTask {
     explicit ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
                                   ModPlatform::IndexedVersion version,
                                   ResourceFolderModel* packs,
-                                  bool is_indexed = true);
+                                  bool is_indexed = true,
+                                  QString downloadReason = "standalone");
     const QString& getFilename() const { return m_pack_version.fileName; }
     const QVariant& getVersionID() const { return m_pack_version.fileId; }
     const ModPlatform::IndexedVersion& getVersion() const { return m_pack_version; }

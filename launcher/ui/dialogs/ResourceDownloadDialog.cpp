@@ -185,7 +185,7 @@ void ResourceDownloadDialog::confirm()
             return;
         }
         for (const auto& dep : task->getDependecies()) {
-            addResource(dep->pack, dep->version);
+            addResource(dep->pack, dep->version, "dependency");
             depNames << dep->pack->name;
         }
         dependencyExtraInfo = task->getExtraInfo();
@@ -234,10 +234,10 @@ ResourcePage* ResourceDownloadDialog::selectedPage()
     return result;
 }
 
-void ResourceDownloadDialog::addResource(ModPlatform::IndexedPack::Ptr pack, ModPlatform::IndexedVersion& ver)
+void ResourceDownloadDialog::addResource(ModPlatform::IndexedPack::Ptr pack, ModPlatform::IndexedVersion& ver, QString downloadReason)
 {
     removeResource(pack->name);
-    selectedPage()->addResourceToPage(pack, ver, getBaseModel());
+    selectedPage()->addResourceToPage(pack, ver, getBaseModel(), downloadReason);
     setButtonStatus();
 }
 

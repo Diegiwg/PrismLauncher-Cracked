@@ -19,20 +19,49 @@
 
 #include "ResourceDownloadTask.h"
 
+#include <utility>
+
 #include "Application.h"
 
 #include "FileSystem.h"
+#include "minecraft/MinecraftInstance.h"
+#include "minecraft/PackProfile.h"
 #include "minecraft/mod/ResourceFolderModel.h"
 
 #include "minecraft/mod/ShaderPackFolderModel.h"
+#include "modplatform/ModIndex.h"
 #include "modplatform/helpers/HashUtils.h"
 #include "net/ApiDownload.h"
 #include "net/ChecksumValidator.h"
 
+namespace {
+Net::ModrinthDownloadMeta createModrinthMeta(BaseInstance* instance, QString reason)
+{
+    auto* mcInstance = dynamic_cast<MinecraftInstance*>(instance);
+    if (!mcInstance) {
+        return {};
+    }
+
+    auto* profile = mcInstance->getPackProfile();
+    if (!profile) {
+        return {};
+    }
+
+    auto loaders = profile->getModLoadersList();
+
+    return {
+        .reason = std::move(reason),
+        .gameVersion = profile->getComponentVersion("net.minecraft"),
+        .loader = !loaders.isEmpty() ? ModPlatform::getModLoaderAsString(loaders.first()) : "",
+    };
+}
+}  // namespace
+
 ResourceDownloadTask::ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
                                            ModPlatform::IndexedVersion version,
                                            ResourceFolderModel* packs,
-                                           bool is_indexed)
+                                           bool is_indexed,
+                                           QString downloadReason)
     : m_pack(std::move(pack)), m_pack_version(std::move(version)), m_pack_model(packs)
 {
     if (is_indexed) {
@@ -45,7 +74,9 @@ ResourceDownloadTask::ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
     m_filesNetJob.reset(new NetJob(tr("Resource download"), APPLICATION->network()));
     m_filesNetJob->setStatus(tr("Downloading resource:\n%1").arg(m_pack_version.downloadUrl));
 
-    auto action = Net::ApiDownload::makeFile(m_pack_version.downloadUrl, m_pack_model->dir().absoluteFilePath(getFilename()));
+    auto action = Net::ApiDownload::makeFile(m_pack_version.downloadUrl, m_pack_model->dir().absoluteFilePath(getFilename()),
+                                             Net::Download::Option::NoOptions,
+                                             createModrinthMeta(m_pack_model->instance(), std::move(downloadReason)));
     if (!m_pack_version.hash_type.isEmpty() && !m_pack_version.hash.isEmpty()) {
         switch (Hashing::algorithmFromString(m_pack_version.hash_type)) {
             case Hashing::Algorithm::Md4:
