@@ -179,6 +179,7 @@ TranslationsModel::TranslationsModel(const QString& path, QObject* parent) : QAb
 {
     d = std::make_unique<Private>();
     d->m_dir.setPath(path);
+    d->m_selectedLanguage = APPLICATION->settings()->get("Language").toString();
     FS::ensureFolderPathExists(path);
     reloadLocalFiles();
 
@@ -202,22 +203,20 @@ void TranslationsModel::indexReceived()
 {
     qDebug() << "Got translations index!";
     d->m_indexJob.reset();
+    reloadLocalFiles();
 
     if (d->m_noLanguageSet) {
-        reloadLocalFiles();
-
         auto language = getSystemLocaleName();
         if (!findLanguageAsOptional(language).has_value()) {
             language = getSystemLanguage();
         }
         selectLanguage(language);
-        if (selectedLanguage() != g_defaultLangCode) {
-            updateLanguage(selectedLanguage());
-        }
         APPLICATION->settings()->set("Language", selectedLanguage());
         d->m_noLanguageSet = false;
-    } else if (d->m_selectedLanguage != g_defaultLangCode) {
-        downloadTranslation(d->m_selectedLanguage);
+    }
+
+    if (selectedLanguage() != g_defaultLangCode) {
+        updateLanguage(selectedLanguage());
     }
 }
 
