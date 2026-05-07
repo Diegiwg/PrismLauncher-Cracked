@@ -213,17 +213,22 @@ std::unique_ptr<MinecraftInstance> ModrinthCreationTask::createInstance()
     components->buildingFromScratch();
     components->setComponentVersion("net.minecraft", m_minecraft_version, true);
 
+    QString loader;
     if (!m_fabric_version.isEmpty()) {
         components->setComponentVersion("net.fabricmc.fabric-loader", m_fabric_version);
+        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Fabric);
     }
     if (!m_quilt_version.isEmpty()) {
         components->setComponentVersion("org.quiltmc.quilt-loader", m_quilt_version);
+        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Quilt);
     }
     if (!m_forge_version.isEmpty()) {
         components->setComponentVersion("net.minecraftforge", m_forge_version);
+        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Forge);
     }
     if (!m_neoForge_version.isEmpty()) {
         components->setComponentVersion("net.neoforged", m_neoForge_version);
+        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::NeoForge);
     }
 
     if (m_instIcon != "default") {
@@ -271,22 +276,8 @@ std::unique_ptr<MinecraftInstance> ModrinthCreationTask::createInstance()
         }
         qDebug() << "Will try to download" << file.downloads.front() << "to" << filePath;
 
-        QString loader;
-        if (m_instance.has_value()) {
-            auto* mcInstance = dynamic_cast<MinecraftInstance*>(m_instance.value());
-            if (mcInstance) {
-                auto* profile = mcInstance->getPackProfile();
-                if (profile) {
-                    auto loaders = profile->getModLoadersList();
-                    if (!loaders.isEmpty()) {
-                        loader = ModPlatform::getModLoaderAsString(loaders.first());
-                    }
-                }
-            }
-        }
-
         Net::ModrinthDownloadMeta meta{
-            .reason = "modpack",
+            .reason = m_instance.has_value() ? "update" : "modpack",
             .gameVersion = m_minecraft_version,
             .loader = loader,
         };
