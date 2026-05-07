@@ -9,7 +9,6 @@
 
 #include "ResourceDownloadTask.h"
 #include "modplatform/ModIndex.h"
-#include "modplatform/ResourceAPI.h"
 
 #include "ui/pages/BasePage.h"
 #include "ui/pages/modplatform/ResourceModel.h"
@@ -78,7 +77,10 @@ class ResourcePage : public QWidget, public BasePage {
     void addResourceToDialog(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&);
     void removeResourceFromDialog(const QString& packName);
     virtual void removeResourceFromPage(const QString& name);
-    virtual void addResourceToPage(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&, ResourceFolderModel*, QString downloadReason = "standalone");
+    virtual void addResourceToPage(ModPlatform::IndexedPack::Ptr,
+                                   ModPlatform::IndexedVersion&,
+                                   ResourceFolderModel*,
+                                   QString downloadReason = "standalone");
 
     virtual void modelReset();
 

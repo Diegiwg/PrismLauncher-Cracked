@@ -38,28 +38,31 @@ struct ModrinthDownloadMeta {
     QByteArray toJson() const
     {
         QJsonObject obj;
-        if (!reason.isEmpty())
+        if (!reason.isEmpty()) {
             obj["reason"] = reason;
-        if (!gameVersion.isEmpty())
+        }
+        if (!gameVersion.isEmpty()) {
             obj["game_version"] = gameVersion;
-        if (!loader.isEmpty())
+        }
+        if (!loader.isEmpty()) {
             obj["loader"] = loader;
+        }
         return QJsonDocument(obj).toJson(QJsonDocument::Compact);
     }
 };
 
 class ApiHeaderProxy : public HeaderProxy {
    public:
-    ApiHeaderProxy() : HeaderProxy() {}
+    ApiHeaderProxy() = default;
     explicit ApiHeaderProxy(ModrinthDownloadMeta meta) : m_meta(std::move(meta)) {}
-    virtual ~ApiHeaderProxy() = default;
+    ~ApiHeaderProxy() override = default;
 
    public:
-    virtual QList<HeaderPair> headers(const QNetworkRequest& request) const override
+    QList<HeaderPair> headers(const QNetworkRequest& request) const override
     {
         QList<HeaderPair> hdrs;
         if (APPLICATION->capabilities() & Application::SupportsFlame && request.url().host() == QUrl(BuildConfig.FLAME_BASE_URL).host()) {
-            hdrs.append({ "x-api-key", APPLICATION->getFlameAPIKey().toUtf8() });
+            hdrs.append({ .headerName = "x-api-key", .headerValue = APPLICATION->getFlameAPIKey().toUtf8() });
         } else if (request.url().host() == QUrl(BuildConfig.MODRINTH_PROD_URL).host() ||
                    request.url().host() == QUrl(BuildConfig.MODRINTH_STAGING_URL).host()) {
             QString token = APPLICATION->getModrinthAPIToken();

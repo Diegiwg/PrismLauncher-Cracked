@@ -20,7 +20,6 @@
 #pragma once
 
 #include "net/NetJob.h"
-#include "net/ApiHeaderProxy.h"
 #include "tasks/SequentialTask.h"
 
 #include "minecraft/mod/tasks/LocalResourceUpdateTask.h"
@@ -34,7 +33,7 @@ class ResourceDownloadTask : public SequentialTask {
     explicit ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
                                   ModPlatform::IndexedVersion version,
                                   ResourceFolderModel* packs,
-                                  bool is_indexed = true,
+                                  bool isIndexed = true,
                                   QString downloadReason = "standalone");
     const QString& getFilename() const { return m_pack_version.fileName; }
     const QVariant& getVersionID() const { return m_pack_version.fileId; }
@@ -58,5 +57,5 @@ class ResourceDownloadTask : public SequentialTask {
     std::tuple<QString, QString> to_delete{ "", "" };
 
    private slots:
-    void hasOldResource(QString name, QString filename);
+    void hasOldResource(const QString& name, const QString& filename);
 };

@@ -401,7 +401,7 @@ void ResourcePage::addResourceToPage(ModPlatform::IndexedPack::Ptr pack,
                                      QString downloadReason)
 {
     bool isIndexed = !APPLICATION->settings()->get("ModMetadataDisabled").toBool();
-    m_model->addPack(std::move(pack), ver, baseModel, isIndexed);
+    m_model->addPack(std::move(pack), ver, baseModel, isIndexed, std::move(downloadReason));
 }
 
 void ResourcePage::modelReset()

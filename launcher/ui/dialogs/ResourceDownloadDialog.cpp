@@ -237,7 +237,7 @@ ResourcePage* ResourceDownloadDialog::selectedPage()
 void ResourceDownloadDialog::addResource(ModPlatform::IndexedPack::Ptr pack, ModPlatform::IndexedVersion& ver, QString downloadReason)
 {
     removeResource(pack->name);
-    selectedPage()->addResourceToPage(pack, ver, getBaseModel(), downloadReason);
+    selectedPage()->addResourceToPage(pack, ver, getBaseModel(), std::move(downloadReason));
     setButtonStatus();
 }
 
