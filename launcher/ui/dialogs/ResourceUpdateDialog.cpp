@@ -465,17 +465,17 @@ void ResourceUpdateDialog::appendResource(const CheckUpdateTask::Update& info, Q
     providerItem->setData(0, Qt::UserRole, providerName);
 
     auto* oldVersionItem = new QTreeWidgetItem(itemTop);
-    oldVersionItem->setText(0, tr("Old version: %1").arg(info.old_version));
-    oldVersionItem->setData(0, Qt::UserRole, info.old_version);
+    oldVersionItem->setText(0, tr("Old version: %1").arg(info.oldVersion));
+    oldVersionItem->setData(0, Qt::UserRole, info.oldVersion);
 
     auto* newVersionItem = new QTreeWidgetItem(itemTop);
-    newVersionItem->setText(0, tr("New version: %1").arg(info.new_version));
-    newVersionItem->setData(0, Qt::UserRole, info.new_version);
+    newVersionItem->setText(0, tr("New version: %1").arg(info.newVersion));
+    newVersionItem->setData(0, Qt::UserRole, info.newVersion);
 
-    if (info.new_version_type.has_value()) {
+    if (info.newVersionType.has_value()) {
         auto* newVersionTypeItem = new QTreeWidgetItem(itemTop);
-        newVersionTypeItem->setText(0, tr("New Version Type: %1").arg(info.new_version_type.value().toString()));
-        newVersionTypeItem->setData(0, Qt::UserRole, info.new_version_type.value().toString());
+        newVersionTypeItem->setText(0, tr("New Version Type: %1").arg(info.newVersionType.value().toString()));
+        newVersionTypeItem->setData(0, Qt::UserRole, info.newVersionType.value().toString());
     }
 
     if (!requiredBy.isEmpty()) {
