@@ -935,15 +935,6 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         qInfo() << "<> Network done.";
     }
 
-    // load translations
-    {
-        m_translations.reset(new TranslationsModel("translations"));
-        auto bcp47Name = m_settings->get("Language").toString();
-        m_translations->selectLanguage(bcp47Name);
-        qInfo() << "Your language is" << bcp47Name;
-        qInfo() << "<> Translations loaded.";
-    }
-
     // Instance icons
     {
         auto setting = APPLICATION->settings()->getSetting("IconsDir");
@@ -1022,8 +1013,16 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         qInfo() << "<> Cache initialized.";
     }
 
-    // now we have network, download translation updates
-    m_translations->downloadIndex();
+    // load translations
+    {
+        m_translations.reset(new TranslationsModel("translations"));
+        auto bcp47Name = m_settings->get("Language").toString();
+        m_translations->selectLanguage(bcp47Name);
+        qInfo() << "Your language is" << bcp47Name;
+        qInfo() << "<> Translations loaded.";
+
+        m_translations->downloadIndex();
+    }
 
     // FIXME: what to do with these?
     m_profilers.insert("jprofiler", std::shared_ptr<BaseProfilerFactory>(new JProfilerFactory()));

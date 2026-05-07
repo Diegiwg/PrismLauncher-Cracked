@@ -267,7 +267,12 @@ void TranslationsModel::reloadLocalFiles()
 {
     QMap<QString, Language> languages = { { g_defaultLangCode, Language(g_defaultLangCode) } };
 
-    readIndex(d->m_dir.absoluteFilePath("index_v2.json"), languages);
+    const auto indexPath = d->m_dir.absoluteFilePath("index_v2.json");
+    if (!QFileInfo::exists(indexPath)) {
+        downloadIndex();
+        return;
+    }
+    readIndex(indexPath, languages);
     auto entries = d->m_dir.entryInfoList({ "mmc_*.qm", "*.po" }, QDir::Files | QDir::NoDotAndDotDot);
     for (auto& entry : entries) {
         auto completeSuffix = entry.completeSuffix();
