@@ -684,6 +684,32 @@ bool deletePath(QString path)
     return err.value() == 0;
 }
 
+bool deleteContents(const QString& path)
+{
+    const QFileInfo info(path);
+    if (!info.exists()) {
+        return true;
+    }
+    if (!info.isDir()) {
+        qWarning() << "Attempted to delete contents of non-directory path:" << path;
+        return false;
+    }
+
+    bool ret = true;
+
+    for (const auto& entry : fs::directory_iterator(StringUtils::toStdString(path))) {
+        std::error_code err;
+
+        fs::remove_all(entry.path(), err);
+        if (err.value() != 0) {
+            qWarning().nospace() << "Could not delete directory entry " << entry.path() << ": " << QString::fromStdString(err.message());
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
 bool trash(QString path, QString* pathInTrash)
 {
     // FIXME: Figure out trash in Flatpak. Qt seemingly doesn't use the Trash portal
