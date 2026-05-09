@@ -64,7 +64,7 @@ class ResourceDownloadDialog : public QDialog, public BasePageProvider {
     bool selectPage(QString pageId);
     ResourcePage* selectedPage();
 
-    void addResource(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&);
+    void addResource(ModPlatform::IndexedPack::Ptr, ModPlatform::IndexedVersion&, QString downloadReason = "standalone");
     void removeResource(const QString&);
 
     QList<DownloadTaskPtr> getTasks();
@@ -121,7 +121,10 @@ class ResourcePackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit ResourcePackDownloadDialog(QWidget* parent, ResourcePackFolderModel* resourcePacks, BaseInstance* instance, bool suppressInitialSearch = false);
+    explicit ResourcePackDownloadDialog(QWidget* parent,
+                                        ResourcePackFolderModel* resourcePacks,
+                                        BaseInstance* instance,
+                                        bool suppressInitialSearch = false);
     ~ResourcePackDownloadDialog() override = default;
 
     //: String that gets appended to the resource pack download dialog title ("Download " + resourcesString())
@@ -138,7 +141,10 @@ class TexturePackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit TexturePackDownloadDialog(QWidget* parent, TexturePackFolderModel* resourcePacks, BaseInstance* instance, bool suppressInitialSearch = false);
+    explicit TexturePackDownloadDialog(QWidget* parent,
+                                       TexturePackFolderModel* resourcePacks,
+                                       BaseInstance* instance,
+                                       bool suppressInitialSearch = false);
     ~TexturePackDownloadDialog() override = default;
 
     //: String that gets appended to the texture pack download dialog title ("Download " + resourcesString())
@@ -155,7 +161,10 @@ class ShaderPackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit ShaderPackDownloadDialog(QWidget* parent, ShaderPackFolderModel* shaders, BaseInstance* instance, bool suppressInitialSearch = false);
+    explicit ShaderPackDownloadDialog(QWidget* parent,
+                                      ShaderPackFolderModel* shaders,
+                                      BaseInstance* instance,
+                                      bool suppressInitialSearch = false);
     ~ShaderPackDownloadDialog() override = default;
 
     //: String that gets appended to the shader pack download dialog title ("Download " + resourcesString())
@@ -172,7 +181,10 @@ class DataPackDownloadDialog final : public ResourceDownloadDialog {
     Q_OBJECT
 
    public:
-    explicit DataPackDownloadDialog(QWidget* parent, DataPackFolderModel* dataPacks, BaseInstance* instance, bool suppressInitialSearch = false);
+    explicit DataPackDownloadDialog(QWidget* parent,
+                                    DataPackFolderModel* dataPacks,
+                                    BaseInstance* instance,
+                                    bool suppressInitialSearch = false);
     ~DataPackDownloadDialog() override = default;
 
     //: String that gets appended to the data pack download dialog title ("Download " + resourcesString())
