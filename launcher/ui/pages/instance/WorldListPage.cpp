@@ -259,6 +259,7 @@ void WorldListPage::on_actionData_Packs_triggered()
 
     dialog->setLayout(layout);
 
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->exec();
 
     APPLICATION->settings()->set("DataPackDownloadGeometry", dialog->saveGeometry().toBase64());
