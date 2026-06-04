@@ -65,8 +65,11 @@ bool readFromOutput(const char* command, F function)
 #endif
 #include <QSettings>
 
-#include "dxgi.h"
-#include "windows.h"
+#include <dxgi1_6.h>
+#include <windows.h>
+
+#include <wrl/client.h>
+using Microsoft::WRL::ComPtr;
 
 QString HardwareInfo::cpuInfo()
 {
@@ -104,29 +107,28 @@ uint64_t HardwareInfo::availableRamMiB()
 
 QStringList HardwareInfo::gpuInfo()
 {
-    IDXGIFactory* factory = nullptr;
-    if (CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&factory)) != S_OK) {  // NOLINT(*-pro-type-reinterpret-cast)
-        qWarning() << "Could not create DXGI factory";
+    ComPtr<IDXGIFactory6> factory;
+    HRESULT hr = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
+    if (FAILED(hr)) {
+        qWarning() << "Could not create DXGI factory:" << Qt::hex << hr;
         return { "GPU discovery failed: could not create DXGI factory" };
     }
 
     UINT i = 0;
-    IDXGIAdapter* adapter = nullptr;
+    ComPtr<IDXGIAdapter> adapter;
     QStringList out;
-
-    while (factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND) {
+    while (factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND) {
         DXGI_ADAPTER_DESC desc;
-        if (adapter->GetDesc(&desc) != S_OK) {
-            qWarning() << "Could not get DXGI adapter description";
-        } else {
+        hr = adapter->GetDesc(&desc);
+        if (SUCCEEDED(hr)) {
             out << "GPU: " + QString::fromWCharArray(desc.Description);  // NOLINT(*-pro-bounds-array-to-pointer-decay, *-no-array-decay)
+        } else {
+            qWarning() << "Could not get DXGI adapter description:" << Qt::hex << hr;
         }
 
-        adapter->Release();
         ++i;
     }
 
-    factory->Release();
     return out;
 }
 
