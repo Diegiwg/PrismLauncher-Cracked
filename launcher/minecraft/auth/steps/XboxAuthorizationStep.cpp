@@ -60,7 +60,7 @@ void XboxAuthorizationStep::onRequestDone(QByteArray* response)
     qCDebug(authCredentials()) << *response;
     if (m_request->error() != QNetworkReply::NoError) {
         qWarning() << "Reply error:" << m_request->error();
-        if (Net::isApplicationError(m_request->error())) {
+        if (Net::isApplicationError(m_request->error()) && !Net::isServerError(m_request->error())) {
             if (processSTSError(*response)) {
                 return;
             }
