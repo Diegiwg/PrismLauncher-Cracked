@@ -67,6 +67,7 @@ void XboxAuthorizationStep::onRequestDone(QByteArray* response)
             emit finished(AccountTaskState::STATE_FAILED_SOFT,
                           tr("Unknown STS error for %1 services: %2").arg(m_authorizationKind, m_request->errorString()));
         } else {
+            m_data->networkError = m_request->error();
             emit finished(AccountTaskState::STATE_OFFLINE,
                           tr("Failed to get authorization for %1 services: %2").arg(m_authorizationKind, m_request->errorString()));
         }

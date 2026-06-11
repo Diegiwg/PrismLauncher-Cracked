@@ -60,6 +60,7 @@ void LauncherLoginStep::onRequestDone(QByteArray* response)
             emit finished(AccountTaskState::STATE_FAILED_SOFT,
                           tr("Failed to get Minecraft access token: %1").arg(m_request->errorString()));
         } else {
+            m_data->networkError = m_request->error();
             emit finished(AccountTaskState::STATE_OFFLINE, tr("Failed to get Minecraft access token: %1").arg(m_request->errorString()));
         }
         return;

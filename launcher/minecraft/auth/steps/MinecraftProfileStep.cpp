@@ -56,6 +56,7 @@ void MinecraftProfileStep::onRequestDone(QByteArray* response)
             emit finished(AccountTaskState::STATE_FAILED_SOFT,
                           tr("Minecraft Java profile acquisition failed: %1").arg(m_request->errorString()));
         } else {
+            m_data->networkError = m_request->error();
             emit finished(AccountTaskState::STATE_OFFLINE,
                           tr("Minecraft Java profile acquisition failed: %1").arg(m_request->errorString()));
         }
