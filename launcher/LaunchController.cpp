@@ -40,8 +40,8 @@
 #include "minecraft/auth/AccountData.h"
 #include "minecraft/auth/AccountList.h"
 
-#include "ui/InstanceWindow.h"
 #include "net/NetUtils.h"
+#include "ui/InstanceWindow.h"
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui/dialogs/MSALoginDialog.h"
 #include "ui/dialogs/ProfileSelectDialog.h"
@@ -183,41 +183,6 @@ LaunchDecision LaunchController::decideLaunchMode()
 
     QString reauthReason;
     switch (state) {
-        case AccountState::Offline: {
-            if (m_wantedLaunchMode == LaunchMode::Normal) {
-                QMessageBox msg(m_parentWidget);
-
-                auto netErr = accountToCheck->accountData()->networkError;
-                if (Net::isServerError(netErr)) {
-                    msg.setWindowTitle(tr("Auth servers offline"));
-                    msg.setText(tr("The Minecraft authentication servers are currently unavailable.\n\n%1").arg(accountToCheck->lastError()));
-                } else {
-                    msg.setWindowTitle(tr("No internet connection"));
-                    msg.setText(tr("Unable to connect to the internet.\n\n%1").arg(accountToCheck->lastError()));
-                }
-
-                msg.setIcon(QMessageBox::Warning);
-
-                auto* launchOfflineButton = msg.addButton(tr("Launch Offline"), QMessageBox::AcceptRole);
-                auto* retryButton = msg.addButton(tr("Retry"), QMessageBox::ActionRole);
-                msg.addButton(tr("Cancel"), QMessageBox::RejectRole);
-                msg.setDefaultButton(launchOfflineButton);
-
-                msg.exec();
-
-                if (msg.clickedButton() == launchOfflineButton) {
-                    m_actualLaunchMode = LaunchMode::Offline;
-                    return LaunchDecision::Continue;
-                }
-                if (msg.clickedButton() == retryButton) {
-                    return LaunchDecision::Undecided;
-                }
-                return LaunchDecision::Abort;
-            }
-
-            m_actualLaunchMode = LaunchMode::Offline;
-            return LaunchDecision::Continue;
-        }
         case AccountState::Errored:
             reauthReason = tr("An error occurred while refreshing '%1'").arg(accountToCheck->profileName());
             break;
@@ -261,13 +226,14 @@ bool LaunchController::askPlayDemo() const
     return box.clickedButton() == demoButton;
 }
 
-QString LaunchController::askOfflineName(const QString& playerName, bool* ok) const
+QString LaunchController::askOfflineName(const QString& playerName, bool* ok)
 {
     if (ok != nullptr) {
         *ok = false;
     }
 
-    QString message;
+    QString title, message;
+    title = tr("Player name");
     switch (m_actualLaunchMode) {
         case LaunchMode::Normal:
             Q_ASSERT(false);
@@ -277,7 +243,14 @@ QString LaunchController::askOfflineName(const QString& playerName, bool* ok) co
             break;
         case LaunchMode::Offline:
             if (m_wantedLaunchMode == LaunchMode::Normal) {
-                message = tr("You are not connected to the Internet, launching in offline mode\n\n");
+                auto netErr = m_accountToUse->accountData()->networkError;
+                if (Net::isServerError(netErr)) {
+                    title = tr("Auth servers offline");
+                    message = tr("The Minecraft authentication servers are currently unavailable, launching in offline mode.\n\n");
+                } else {
+                    title = tr("No internet connection");
+                    message = tr("You are not connected to the Internet, launching in offline mode.\n\n");
+                }
             }
             message += tr("Choose your offline mode player name");
             break;
@@ -287,7 +260,7 @@ QString LaunchController::askOfflineName(const QString& playerName, bool* ok) co
     QString usedname = lastOfflinePlayerName.isEmpty() ? playerName : lastOfflinePlayerName;
 
     ChooseOfflineNameDialog dialog(message, m_parentWidget);
-    dialog.setWindowTitle(tr("Player name"));
+    dialog.setWindowTitle(title);
     dialog.setUsername(usedname);
     if (dialog.exec() != QDialog::Accepted) {
         return {};
