@@ -182,6 +182,33 @@ LaunchDecision LaunchController::decideLaunchMode()
 
     QString reauthReason;
     switch (state) {
+        case AccountState::Offline: {
+            if (m_wantedLaunchMode == LaunchMode::Normal) {
+                QMessageBox msg(m_parentWidget);
+                msg.setWindowTitle(tr("Auth servers offline"));
+                msg.setText(tr("The Minecraft authentication servers are currently unavailable."));
+                msg.setIcon(QMessageBox::Warning);
+
+                auto* launchOfflineButton = msg.addButton(tr("Launch Offline"), QMessageBox::AcceptRole);
+                auto* retryButton = msg.addButton(tr("Retry"), QMessageBox::ActionRole);
+                msg.addButton(tr("Cancel"), QMessageBox::RejectRole);
+                msg.setDefaultButton(launchOfflineButton);
+
+                msg.exec();
+
+                if (msg.clickedButton() == launchOfflineButton) {
+                    m_actualLaunchMode = LaunchMode::Offline;
+                    return LaunchDecision::Continue;
+                }
+                if (msg.clickedButton() == retryButton) {
+                    return LaunchDecision::Undecided;
+                }
+                return LaunchDecision::Abort;
+            }
+
+            m_actualLaunchMode = LaunchMode::Offline;
+            return LaunchDecision::Continue;
+        }
         case AccountState::Errored:
             reauthReason = tr("An error occurred while refreshing '%1'").arg(accountToCheck->profileName());
             break;
