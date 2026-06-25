@@ -255,7 +255,6 @@ void ModFolderModel::onParseSucceeded(int ticket, QString mod_id)
     if (result && resource) {
         auto* mod = static_cast<Mod*>(resource.get());
         mod->finishResolvingWithDetails(std::move(result->details));
-
     }
     emit dataChanged(index(row, RequiresColumn), index(row, RequiredByColumn));
 }
@@ -319,15 +318,14 @@ QSet<Mod*> collectMods(QSet<Mod*> mods, QHash<QString, QSet<Mod*>> relation, std
 {
     QSet<Mod*> affectedList = {};
     QSet<Mod*> needToCheck = {};
-    for (auto mod : mods) {
+    for (auto* mod : mods) {
         auto id = mod->mod_id();
-        if (seen.count(id) == 0) {
+        if (!seen.contains(id)) {
             seen.insert(id);
-            for (auto affected : relation[id]) {
+            for (auto* affected : relation[id]) {
                 auto affectedId = affected->mod_id();
 
-                if (findById(mods, affectedId) == nullptr && seen.count(affectedId) == 0) {
-                    seen.insert(affectedId);
+                if (findById(mods, affectedId) == nullptr && !seen.contains(affectedId)) {
                     if (shouldBeEnabled != affected->enabled()) {
                         affectedList << affected;
                     }
