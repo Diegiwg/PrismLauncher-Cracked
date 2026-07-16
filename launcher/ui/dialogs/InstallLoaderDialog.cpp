@@ -101,12 +101,12 @@ InstallLoaderDialog::InstallLoaderDialog(PackProfile* profile, const QString& ui
     buttonLayout->setContentsMargins(0, 0, 6, 6);
     #endif
     auto refreshButton = new QPushButton(tr("&Refresh"), this);
-    connect(refreshButton, &QPushButton::clicked, this, [this] { pageCast(container->selectedPage())->loadList(); });
+    connect(refreshButton, &QPushButton::clicked, this, [this] { pageCast(container->selectedPage())->loadList(true); });
     buttonLayout->addWidget(refreshButton);
 
     buttons->setOrientation(Qt::Horizontal);
     buttons->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
-    buttons->button(QDialogButtonBox::Ok)->setText(tr("Ok"));
+    buttons->button(QDialogButtonBox::Ok)->setText(tr("OK"));
     buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));
     connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
