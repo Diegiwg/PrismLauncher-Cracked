@@ -393,6 +393,8 @@
   <tabstop>javaTestBtn</tabstop>
   <tabstop>javaDownloadBtn</tabstop>
   <tabstop>maxMemSpinBox</tabstop>
+  <tabstop>permGenSpinBox</tabstop>
+  <tabstop>lowMemWarningCheckBox</tabstop>
   <tabstop>jvmArgsTextBox</tabstop>
  </tabstops>
  <resources/>
