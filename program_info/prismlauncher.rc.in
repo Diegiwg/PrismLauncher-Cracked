@@ -8,7 +8,7 @@ IDI_ICON1               ICON    DISCARDABLE     "@Launcher_APP_BINARY_NAME@.ico"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     @Launcher_VERSION_NAME4_COMMA@
-FILEOS          VOS_NT_WINDOWS32
+FILEOS          0x00040004
 FILETYPE        VFT_APP
 BEGIN
         BLOCK "StringFileInfo"
@@ -24,6 +24,6 @@ BEGIN
         END
         BLOCK "VarFileInfo"
         BEGIN
-                VALUE "Translation", 0x0000, 0x04b0 // Unicode
+                VALUE "Translation", 0x0000, 0x04b0
         END
 END
