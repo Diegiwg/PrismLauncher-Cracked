@@ -57,6 +57,8 @@ class VersionTest : public QObject {
                                              << "1.42" << true << false;
         QTest::newRow("lessThan, snapshot") << "1.20.0-rc2"
                                             << "1.20.1" << true << false;
+        QTest::newRow("lessThan, build") << "11.0.2"
+                                         << "11.0.2.1" << true << false;
 
         QTest::newRow("greaterThan, explicit 1") << "1.2.1"
                                                  << "1.2.0" << false << false;
@@ -76,6 +78,8 @@ class VersionTest : public QObject {
                                                 << "1.41" << false << false;
         QTest::newRow("greaterThan, snapshot") << "1.20.2-rc2"
                                                << "1.20.1" << false << false;
+        QTest::newRow("greaterThan, build") << "11.0.2.1"
+                                            << "11.0.2" << false << false;
     }
 
    private slots:

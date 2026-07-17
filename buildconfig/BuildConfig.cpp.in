@@ -58,6 +58,7 @@ Config::Config()
     VERSION_MAJOR = @Launcher_VERSION_MAJOR@;
     VERSION_MINOR = @Launcher_VERSION_MINOR@;
     VERSION_PATCH = @Launcher_VERSION_PATCH@;
+    VERSION_BUILD = @Launcher_VERSION_BUILD@;
 
     BUILD_PLATFORM = "@Launcher_BUILD_PLATFORM@";
     BUILD_ARTIFACT = "@Launcher_BUILD_ARTIFACT@";
@@ -128,7 +129,11 @@ Config::Config()
 
 QString Config::versionString() const
 {
-    return QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+    QString version = QString("%1.%2.%3").arg(VERSION_MAJOR).arg(VERSION_MINOR).arg(VERSION_PATCH);
+    if (VERSION_BUILD != 0) {
+        version += "." + QString::number(VERSION_BUILD);
+    }
+    return version;
 }
 
 QString Config::printableVersionString() const
