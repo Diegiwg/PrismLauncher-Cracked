@@ -26,6 +26,7 @@ jobs:
     with:
       build-type: Release
       environment: Release
+      version: ${{ inputs.version || github.ref_name }}
     secrets: inherit
 
   create_release:

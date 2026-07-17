@@ -182,6 +182,22 @@ set(Launcher_LEGACY_FMLLIBS_BASE_URL "https://files.prismlauncher.org/fmllibs/" 
 set(Launcher_VERSION_MAJOR 11)
 set(Launcher_VERSION_MINOR 0)
 set(Launcher_VERSION_PATCH 3)
+set(Launcher_VERSION_BUILD 0)
+
+if(DEFINED ENV{PRISMLAUNCHER_VERSION} AND NOT "$ENV{PRISMLAUNCHER_VERSION}" STREQUAL "")
+    set(Launcher_VERSION_OVERRIDE "$ENV{PRISMLAUNCHER_VERSION}")
+    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(\\.([0-9]+))?$" _Launcher_VERSION_MATCH "${Launcher_VERSION_OVERRIDE}")
+    if(NOT _Launcher_VERSION_MATCH)
+        message(FATAL_ERROR "PRISMLAUNCHER_VERSION must be MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH.BUILD")
+    endif()
+
+    set(Launcher_VERSION_MAJOR "${CMAKE_MATCH_1}")
+    set(Launcher_VERSION_MINOR "${CMAKE_MATCH_2}")
+    set(Launcher_VERSION_PATCH "${CMAKE_MATCH_3}")
+    if(CMAKE_MATCH_5)
+        set(Launcher_VERSION_BUILD "${CMAKE_MATCH_5}")
+    endif()
+endif()
 
 set(Launcher_VERSION_NAME "${Launcher_VERSION_MAJOR}.${Launcher_VERSION_MINOR}.${Launcher_VERSION_PATCH}-${Launcher_VERSION_BUILD}")
 set(Launcher_VERSION_NAME4 "${Launcher_VERSION_MAJOR}.${Launcher_VERSION_MINOR}.${Launcher_VERSION_PATCH}.${Launcher_VERSION_BUILD}")

@@ -17,12 +17,18 @@ on:
       environment:
         description: Deployment environment to run under
         type: string
+      version:
+        description: Launcher version to embed in the build
+        type: string
   workflow_dispatch:
     inputs:
       build-type:
         description: Type of build (Debug or Release)
         type: string
         default: Debug
+      version:
+        description: Launcher version to embed in the build
+        type: string
 
 permissions: {}
 
@@ -95,6 +101,7 @@ jobs:
       BUILD_PLATFORM: official
       BUILD_TYPE: ${{ inputs.build-type || 'Debug' }}
       CMAKE_PRESET: ${{ matrix.cmake-preset }}
+      PRISMLAUNCHER_VERSION: ${{ inputs.version || '' }}
 
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx-deployment-target }}
 
@@ -144,11 +151,17 @@ jobs:
         run: |
           echo "version=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve package version
+        id: package-version
+        shell: bash
+        run: |
+          echo "version=${{ inputs.version || steps.short-version.outputs.version }}" >> "$GITHUB_OUTPUT"
+
       - name: Package (Linux)
         if: ${{ runner.os == 'Linux' }}
         uses: ./.github/actions/package/linux
         with:
-          version: ${{ steps.short-version.outputs.version }}
+          version: ${{ steps.package-version.outputs.version }}
           build-type: ${{ steps.setup-dependencies.outputs.build-type }}
           artifact-name: ${{ matrix.artifact-name }}
           qt-version: ${{ steps.setup-dependencies.outputs.qt-version }}
@@ -160,7 +173,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         uses: ./.github/actions/package/macos
         with:
-          version: ${{ steps.short-version.outputs.version }}
+          version: ${{ steps.package-version.outputs.version }}
           build-type: ${{ steps.setup-dependencies.outputs.build-type }}
           artifact-name: ${{ matrix.artifact-name }}
 
@@ -178,7 +191,7 @@ jobs:
         env:
           CI_HAS_ACCESS_TO_AZURE: ${{ vars.CI_HAS_ACCESS_TO_AZURE || '' }}
         with:
-          version: ${{ steps.short-version.outputs.version }}
+          version: ${{ steps.package-version.outputs.version }}
           build-type: ${{ steps.setup-dependencies.outputs.build-type }}
           artifact-name: ${{ matrix.artifact-name }}
           msystem: ${{ matrix.msystem }}
