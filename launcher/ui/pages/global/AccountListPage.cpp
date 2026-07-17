@@ -55,7 +55,7 @@ AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new 
     ui->setupUi(this);
     ui->listView->setEmptyString(
         tr("Welcome!\n"
-           "If you're new here, you can select the \"Add Microsoft\" button to link your Microsoft account."));
+           "This build uses offline accounts. Use \"Add Offline\" to create one."));
     ui->listView->setEmptyMode(VersionListView::String);
     ui->listView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -83,11 +83,10 @@ AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new 
 
     updateButtonStates();
 
-    // Xbox authentication won't work without a client identifier, so disable the button if it is missing
-    if (~APPLICATION->capabilities() & Application::SupportsMSA) {
-        ui->actionAddMicrosoft->setVisible(false);
-        ui->actionAddMicrosoft->setToolTip(tr("No Microsoft Authentication client ID was set."));
-    }
+    // This fork is offline-only.
+    ui->actionAddMicrosoft->setEnabled(false);
+    ui->actionAddMicrosoft->setToolTip(tr("This build uses offline accounts. Use \"Add Offline\"."));
+    ui->actionAddMicrosoft->setStatusTip(ui->actionAddMicrosoft->toolTip());
 }
 
 AccountListPage::~AccountListPage()
