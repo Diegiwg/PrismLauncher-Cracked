@@ -1,9 +1,4 @@
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#undef VOS_NT_WINDOWS32
-#define VOS_NT_WINDOWS32 VOS_NT_WINDOWS32
+#define RT_MANIFEST 24
 
 IDI_ICON1               ICON    DISCARDABLE     "@Launcher_APP_BINARY_NAME@.ico"
 1 RT_MANIFEST "@Launcher_APP_BINARY_NAME@.manifest"
