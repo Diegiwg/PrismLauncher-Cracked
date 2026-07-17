@@ -1,4 +1,5 @@
 #define RT_MANIFEST 24
+#include <winver.h>
 
 IDI_ICON1               ICON    DISCARDABLE     "@Launcher_APP_BINARY_NAME@.ico"
 1 RT_MANIFEST "@Launcher_APP_BINARY_NAME@.manifest"

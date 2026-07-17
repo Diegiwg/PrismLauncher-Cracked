@@ -128,7 +128,7 @@ void LaunchController::decideAccount()
 
 LaunchDecision LaunchController::decideLaunchMode()
 {
-    m_actualLaunchMode = LaunchMode::Normal;
+    m_actualLaunchMode = m_wantedLaunchMode;
     return LaunchDecision::Continue;
 }
 
