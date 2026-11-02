@@ -180,8 +180,8 @@ set(Launcher_LEGACY_FMLLIBS_BASE_URL "https://files.prismlauncher.org/fmllibs/" 
 
 ######## Set version numbers ########
 set(Launcher_VERSION_MAJOR 11)
-set(Launcher_VERSION_MINOR 0)
-set(Launcher_VERSION_PATCH 3)
+set(Launcher_VERSION_MINOR 1)
+set(Launcher_VERSION_PATCH 1)
 set(Launcher_VERSION_BUILD 0)
 
 if(DEFINED ENV{PRISMLAUNCHER_VERSION} AND NOT "$ENV{PRISMLAUNCHER_VERSION}" STREQUAL "")

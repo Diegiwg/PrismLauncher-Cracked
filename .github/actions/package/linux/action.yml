@@ -100,7 +100,7 @@ runs:
         mv "$INSTALL_APPIMAGE_DIR"/{sharun,AppRun}
         ls -la "$INSTALL_APPIMAGE_DIR"
 
-        if [[ "${{ github.ref_type }}" == "tag" ]]; then
+        if [[ "${{ github.ref_type }}" == "tag" || "${{ inputs.build-type }}" == "Release" ]]; then
           APPIMAGE_DEST="PrismLauncher-Linux-$APPIMAGE_ARCH.AppImage"
         else
           APPIMAGE_DEST="PrismLauncher-Linux-$VERSION-${{ inputs.build-type }}-$APPIMAGE_ARCH.AppImage"
