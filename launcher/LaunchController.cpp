@@ -129,6 +129,10 @@ void LaunchController::decideAccount()
 LaunchDecision LaunchController::decideLaunchMode()
 {
     m_actualLaunchMode = m_wantedLaunchMode;
+    // Offline accounts never need the network: skip metadata/library/asset update steps.
+    if (m_wantedLaunchMode == LaunchMode::Normal && m_accountToUse && m_accountToUse->accountType() == AccountType::Offline) {
+        m_actualLaunchMode = LaunchMode::Offline;
+    }
     return LaunchDecision::Continue;
 }
 
